@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/..",
+        "e:/Roman/Hacclub/Cresent/ghostbyte"
+    ]
+}

@@ -1,0 +1,16 @@
+======================================================================
+ANALYSIS & STEGO INSPECTION
+======================================================================
+
+1. HEATMAP GENERATION:
+   - Ersetzt unsichtbare Zeichen durch farbige Terminal-Symbole (ANSI Escapes):
+     * \u200B -> Red Dot (·)
+     * \u200C -> Green Dot (·)
+     * \u200D -> Yellow Dot (·)
+     * \uFEFF -> Blue Dot (·)
+
+2. METRICS:
+   - Carrier File Size (Bytes)
+   - Hidden Data Size (Bytes)
+   - Steganographic Overhead (Unicode UTF-8 expansion factor ~ 3x pro ZW-Char)
+   - Detection Entropy

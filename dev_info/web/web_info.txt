@@ -1,0 +1,13 @@
+======================================================================
+WEB INTERFACE ARCHITECTURE
+======================================================================
+
+1. STACK:
+   - Backend: Python Standard-Library (http.server) oder minimalistisches Flask/Bottle.
+   - Frontend: Single-File web/index.html (Vanilla JS, CSS Grid).
+
+2. PATHS:
+   - Static: web/index.html wird direkt ohne Subfolder aus web/ serviert.
+   - Endpoints:
+     * POST /api/hide    -> Nimmt Carrier-Text + Datei -> Liefert Stego-Text.
+     * POST /api/extract -> Nimmt Stego-Text -> Liefert rekonstruierte Datei.

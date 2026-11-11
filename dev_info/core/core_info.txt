@@ -1,0 +1,26 @@
+======================================================================
+GHOSTBYTE CORE ARCHITECTURE & SPECIFICATION
+======================================================================
+
+1. UNICODE 2-BIT HOMOGLYPH TABLE:
+   - 00 -> \u200B (Zero-Width Space)
+   - 01 -> \u200C (Zero-Width Non-Joiner)
+   - 10 -> \u200D (Zero-Width Joiner)
+   - 11 -> \uFEFF (Zero-Width No-Break Space / BOM)
+
+2. FRAME STRUCTURE:
+   [MAGIC_START] [HEADER] [PAYLOAD] [MAGIC_END]
+   - MAGIC_START : \u200B\u200D\u200B\u200D
+   - MAGIC_END   : \uFEFF\u200C\uFEFF\u200C
+
+3. HEADER METADATA (Binary Packed):
+   - 4 Bytes: Original File Size (Big Endian uint32)
+   - 4 Bytes: CRC32 Checksum (Integrity validation)
+   - 1 Byte : Filename Length (uint8)
+   - N Bytes: Original Filename (UTF-8)
+
+4. ENCRYPTION (Optional):
+   - AES-256-GCM
+   - Salt: 16 Bytes (PBKDF2 HMAC-SHA256)
+   - Nonce: 12 Bytes
+   - Tag: 16 Bytes

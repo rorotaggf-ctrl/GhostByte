@@ -1,0 +1,14 @@
+======================================================================
+CLI & INJECTOR SPECIFICATION
+======================================================================
+
+1. COMMANDS:
+   - hide <carrier.txt> <secret_file> <output.txt> [--encrypt]
+   - extract <stego.txt> [output_file] [--password]
+   - inspect <stego.txt>
+
+2. INJECTION LOGIC:
+   - Paragraph Distribution: Verteilt ZW-Sequenzen an Zeilenumbrüchen
+     und Leerzeichen, statt den gesamten Payload als Block einzufügen.
+   - Punctuation Trailing: Versteckt Bits bevorzugt hinter Satzzeichen
+     ('.', ',', '!', '?').
