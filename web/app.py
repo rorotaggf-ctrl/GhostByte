@@ -1,15 +1,14 @@
 import sys
 import os
 import json
+import time
+import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from email.message import EmailMessage
 
-# Projektwurzel in den Suchpfad aufnehmen, damit 'core' ueberall gefunden wird
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-# Direkter Import aus deinen dezentralen Core-Modulen
 from core.crypto import encrypt_payload, decrypt_payload
 from core.encoder import encode_bytes_to_zw
 from core.decoder import decode_zw_to_bytes
@@ -29,72 +28,98 @@ class GhostByteHandler(SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_POST(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        raw_body = self.rfile.read(content_length)
+
         if self.path == "/api/hide":
-            content_type = self.headers.get("Content-Type", "")
-            content_length = int(self.headers.get("Content-Length", 0))
-            raw_body = self.rfile.read(content_length)
-
-            msg = EmailMessage()
-            msg["Content-Type"] = content_type
-            msg.set_payload(raw_body)
-
-            carrier = ""
-            passphrase = ""
-            file_bytes = b""
-
-            for part in msg.iter_parts():
-                disp = part.get("Content-Disposition", "")
-                if 'name="carrier"' in disp:
-                    carrier = part.get_content()
-                    if isinstance(carrier, bytes):
-                        carrier = carrier.decode("utf-8", errors="replace")
-                elif 'name="password"' in disp:
-                    passphrase = part.get_content()
-                    if isinstance(passphrase, bytes):
-                        passphrase = passphrase.decode("utf-8", errors="replace")
-                elif 'name="file"' in disp:
-                    file_bytes = part.get_payload(decode=True) or b""
-
-            encrypted = encrypt_payload(file_bytes, passphrase)
-            zw_encoded = encode_bytes_to_zw(encrypted)
-            
-            if carrier.strip():
-                stego_text = carrier + "\n\n" + zw_encoded
-            else:
-                stego_text = zw_encoded
-
-            resp = {"success": True, "stego_text": stego_text}
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps(resp).encode("utf-8"))
-
-        elif self.path == "/api/extract":
-            length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(length)
-            data = json.loads(body.decode("utf-8"))
-
-            stego_text = data.get("stego_text", "")
-            passphrase = data.get("password", "")
-
             try:
-                raw_bytes = decode_zw_to_bytes(stego_text)
-                decrypted = decrypt_payload(raw_bytes, passphrase)
+                data = json.loads(raw_body.decode("utf-8"))
+                carrier = data.get("carrier", "")
+                secret = data.get("secret", "")
+                passphrase = data.get("password", "")
 
+                secret_bytes = secret.encode("utf-8")
+                encrypted = encrypt_payload(secret_bytes, passphrase)
+                zw_encoded = encode_bytes_to_zw(encrypted)
+
+                # Trennung: Trägertext + versteckte Sequenz
+                if carrier.strip():
+                    stego_text = carrier + "\n\n" + zw_encoded
+                else:
+                    stego_text = zw_encoded
+
+                resp = {
+                    "success": True,
+                    "stego_text": stego_text,
+                    "bytes_hidden": len(secret_bytes),
+                    "zw_chars": len(zw_encoded)
+                }
                 self.send_response(200)
-                self.send_header("Content-Type", "application/octet-stream")
-                self.send_header("Content-Disposition", 'attachment; filename="recovered_payload.bin"')
+                self.send_header("Content-Type", "application/json")
                 self.end_headers()
-                self.wfile.write(decrypted)
+                self.wfile.write(json.dumps(resp).encode("utf-8"))
             except Exception as e:
                 self.send_response(400)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
 
+        elif self.path == "/api/extract":
+            try:
+                data = json.loads(raw_body.decode("utf-8"))
+                stego_text = data.get("stego_text", "")
+                passphrase = data.get("password", "")
+
+                raw_bytes = decode_zw_to_bytes(stego_text)
+                decrypted = decrypt_payload(raw_bytes, passphrase)
+                extracted_str = decrypted.decode("utf-8", errors="replace")
+
+                resp = {"success": True, "secret": extracted_str}
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(resp).encode("utf-8"))
+            except Exception as e:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
+
+def get_watched_files():
+    tracked = []
+    for root, _, files in os.walk(ROOT_DIR):
+        if ".git" in root or "__pycache__" in root:
+            continue
+        for file in files:
+            if file.endswith((".py", ".html", ".c", ".txt")):
+                tracked.append(os.path.join(root, file))
+    return tracked
+
+def file_watcher():
+    last_mtimes = {f: os.stat(f).st_mtime for f in get_watched_files() if os.path.exists(f)}
+    while True:
+        time.sleep(1)
+        current_files = get_watched_files()
+        reboot = False
+        for f in current_files:
+            try:
+                mtime = os.stat(f).st_mtime
+                if f not in last_mtimes or mtime > last_mtimes[f]:
+                    reboot = True
+                    break
+            except OSError:
+                continue
+
+        if reboot:
+            print("\n[!] Aenderung erkannt. Starte Server automatisch neu...")
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+
 def run():
+    watcher_thread = threading.Thread(target=file_watcher, daemon=True)
+    watcher_thread.start()
+
     server = HTTPServer(("0.0.0.0", PORT), GhostByteHandler)
-    print(f"[*] GhostByte 1995 Webserver lauscht auf http://localhost:{PORT}")
+    print(f"[*] GhostByte Server lauscht auf http://localhost:{PORT}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
