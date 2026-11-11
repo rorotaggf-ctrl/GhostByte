@@ -4,15 +4,17 @@ import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from email.message import EmailMessage
 
-# 1. Stammverzeichnis sauber für Pylance und Runtime auflösen
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+# Projektwurzel in den Suchpfad aufnehmen, damit 'core' ueberall gefunden wird
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
+# Direkter Import aus deinen dezentralen Core-Modulen
 from core.crypto import encrypt_payload, decrypt_payload
-import ghostbyte
+from core.encoder import encode_bytes_to_zw
+from core.decoder import decode_zw_to_bytes
 
-PORT = int(os.environ.get("GHOSTBYTE_PORT", 9435))
+PORT = 9435
 
 class GhostByteHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -32,7 +34,6 @@ class GhostByteHandler(SimpleHTTPRequestHandler):
             content_length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(content_length)
 
-            # Modernes Multipart-Parsing via email.message (Standard Library, kein cgi)
             msg = EmailMessage()
             msg["Content-Type"] = content_type
             msg.set_payload(raw_body)
@@ -54,11 +55,9 @@ class GhostByteHandler(SimpleHTTPRequestHandler):
                 elif 'name="file"' in disp:
                     file_bytes = part.get_payload(decode=True) or b""
 
-            # Payload sichern und enkodieren
             encrypted = encrypt_payload(file_bytes, passphrase)
-            zw_encoded = ghostbyte.encode_bytes_to_zw(encrypted)
+            zw_encoded = encode_bytes_to_zw(encrypted)
             
-            # Trennung sicherstellen
             if carrier.strip():
                 stego_text = carrier + "\n\n" + zw_encoded
             else:
@@ -79,7 +78,7 @@ class GhostByteHandler(SimpleHTTPRequestHandler):
             passphrase = data.get("password", "")
 
             try:
-                raw_bytes = ghostbyte.decode_zw_to_bytes(stego_text)
+                raw_bytes = decode_zw_to_bytes(stego_text)
                 decrypted = decrypt_payload(raw_bytes, passphrase)
 
                 self.send_response(200)

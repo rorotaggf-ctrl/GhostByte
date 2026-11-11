@@ -1,247 +1,249 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="utf-8">
-  <title>GhostByte v1.0 (C) 1995 StegoSoft Corp.</title>
-  <style>
-    body {
-      background-color: #008080;
-      color: #000000;
-      font-family: "MS Sans Serif", Geneva, Tahoma, sans-serif;
-      margin: 15px;
-    }
-    .win95-box {
-      background-color: #c0c0c0;
-      border: 3px outset #ffffff;
-      padding: 10px;
-      max-width: 900px;
-      margin: 0 auto;
-      box-shadow: 5px 5px 0px #000000;
-    }
-    .title-bar {
-      background: linear-gradient(90deg, #000080, #1084d0);
-      color: #ffffff;
-      padding: 4px 8px;
-      font-weight: bold;
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .retro-btn {
-      background-color: #c0c0c0;
-      border: 2px outset #ffffff;
-      padding: 4px 12px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .retro-btn:active {
-      border: 2px inset #ffffff;
-    }
-    .drop-zone {
-      border: 2px dashed #000080;
-      background-color: #ffffff;
-      padding: 15px;
-      text-align: center;
-      margin: 10px 0;
-      cursor: pointer;
-    }
-    .drop-zone.hover {
-      background-color: #ffffcc;
-    }
-    textarea {
-      width: 98%;
-      height: 120px;
-      border: 2px inset #ffffff;
-      font-family: monospace;
-      font-size: 12px;
-    }
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    table.data-table td {
-      border: 1px solid #808080;
-      padding: 6px;
-      background-color: #e0e0e0;
-    }
-    .status-bar {
-      border: 2px inset #ffffff;
-      background: #c0c0c0;
-      padding: 4px;
-      font-size: 12px;
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="utf-8">
+    <title>GhostByte Steganography</title>
+    <style>
+        body {
+            background-color: #008080;
+            color: #000000;
+            font-family: "MS Sans Serif", Geneva, Tahoma, sans-serif;
+            margin: 20px;
+        }
+
+        .main-box {
+            background-color: #c0c0c0;
+            border: 3px outset #ffffff;
+            padding: 15px;
+            max-width: 850px;
+            margin: 0 auto;
+            box-shadow: 4px 4px 0px #000000;
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #808080;
+            padding-bottom: 4px;
+        }
+
+        fieldset {
+            border: 2px groove #ffffff;
+            margin-bottom: 12px;
+            padding: 10px;
+        }
+
+        legend {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        textarea {
+            width: 98%;
+            height: 90px;
+            border: 2px inset #ffffff;
+            font-family: monospace;
+            font-size: 13px;
+            box-sizing: border-box;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .retro-btn {
+            background-color: #c0c0c0;
+            border: 2px outset #ffffff;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        .retro-btn:active {
+            border: 2px inset #ffffff;
+        }
+
+        .drop-hint {
+            font-size: 11px;
+            color: #333333;
+            margin-bottom: 4px;
+        }
+
+        .status-bar {
+            border: 2px inset #ffffff;
+            background: #c0c0c0;
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        input[type="password"] {
+            border: 2px inset #ffffff;
+            padding: 3px;
+            font-size: 12px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="win95-box">
-  <div class="title-bar">
-    <span>[#] GHOSTBYTE STEGANOGRAPHY DRIVE 256</span>
-    <span>_ [X]</span>
-  </div>
+    <div class="main-box">
+        <div class="header-title">GHOSTBYTE STEGANOGRAPHY DRIVE</div>
 
-  <marquee style="background:#000000; color:#00ff00; font-family:Courier; font-size:12px; margin: 4px 0;">
-    +++ WILLKOMMEN BEI GHOSTBYTE 1995 ULTIMATE WEIRD STORAGE +++ POWERED BY BARE-METAL C AES-256 +++
-  </marquee>
+        <fieldset>
+            <legend>1. Sichtbarer Trägertext (Was man mit den Augen liest)</legend>
+            <div class="drop-hint">Hier normalen Text eintippen, einfügen oder TXT-Datei reinziehen:</div>
+            <textarea id="carrierInput"
+                placeholder="Dies ist ein völlig unschuldiger Text, der ganz normal aussieht..."></textarea>
+            Passwort (optional für AES-256): <input type="password" id="passphrase"
+                placeholder="Leer lassen falls egal">
+        </fieldset>
 
-  <p style="font-size:12px;">
-    Verstecke beliebige Dateien (ZIP, EXE, TXT) mithilfe unsichtbarer <b>Unicode-Homoglyphen</b> in normalem Text!
-  </p>
+        <fieldset>
+            <legend>2. Geheimer Inhalt (Was unsichtbar versteckt werden soll)</legend>
+            <div class="drop-hint">Geheimen Text direkt hier eintippen, einfügen oder beliebige Datei reinziehen:</div>
+            <textarea id="secretInput" placeholder="Geheime Botschaft, Passwörter oder Notizen..."></textarea>
+            <input type="file" id="filePicker" style="display:none;">
+            <button class="retro-btn" onclick="document.getElementById('filePicker').click()">Datei auswählen statt
+                Text</button>
+            <span id="fileInfo" style="font-size:11px; margin-left: 6px;"></span>
+        </fieldset>
 
-  <fieldset style="border: 2px groove #ffffff;">
-    <legend><b>1. Trägertext (Carrier) & Passwort:</b></legend>
-    <textarea id="carrierInput" placeholder="Füge hier normalen Text ein oder ziehe eine .txt Datei per Drag & Drop rein..."></textarea>
-    <br>
-    Passwort (AES-256): <input type="password" id="passphrase" style="border:2px inset #ffffff;">
-  </fieldset>
+        <div style="text-align: center; margin: 12px 0;">
+            <button class="retro-btn" onclick="doHide()">[ TEXT VERSTECKEN ]</button>
+            <button class="retro-btn" onclick="doExtract()">[ TEXT EXTRAHIEREN ]</button>
+        </div>
 
-  <fieldset style="border: 2px groove #ffffff; margin-top:10px;">
-    <legend><b>2. Geheimdatei / Payload (Drag & Drop oder Paste):</b></legend>
-    <div class="drop-zone" id="dropZone">
-      <b>DATEI HIER REINZIEHEN</b><br>
-      <span id="fileLabel">(oder klicken zum Auswählen / Strg+V für Zwischenablage)</span>
-      <input type="file" id="fileInput" style="display:none;">
+        <fieldset>
+            <legend>3. Ergebnis</legend>
+            <textarea id="resultOutput"
+                placeholder="Hier erscheint der fertige präparierte Text oder das extrahierte Geheimnis..."></textarea>
+            <button class="retro-btn" onclick="copyResult()">Kopieren</button>
+            <button class="retro-btn" onclick="downloadResult()">Als TXT speichern</button>
+        </fieldset>
+
+        <div class="status-bar" id="status">Bereit. Port 9435.</div>
     </div>
-  </fieldset>
 
-  <div style="text-align: center; margin: 10px 0;">
-    <button class="retro-btn" onclick="processHide()">[ DATEI VERSTECKEN ]</button>
-    <button class="retro-btn" onclick="processExtract()">[ DATEI EXTRAHIEREN ]</button>
-  </div>
+    <script>
+        let pickedFileBytes = null;
+        let pickedFileName = null;
 
-  <fieldset style="border: 2px groove #ffffff;">
-    <legend><b>3. Ergebnis & Inspektion:</b></legend>
-    <textarea id="resultOutput" placeholder="Hier erscheint der manipulierte Text mit den unsichtbaren Bytes..."></textarea>
-    <div style="margin-top:5px;">
-      <button class="retro-btn" onclick="copyResult()">Kopieren</button>
-      <button class="retro-btn" onclick="downloadResultText()">Als TXT speichern</button>
-      <button class="retro-btn" id="dlExtractedBtn" style="display:none;" onclick="downloadExtractedBlob()">Extrahiertes File laden</button>
-    </div>
-  </fieldset>
+        // Drag & Drop für beide Textareas
+        setupDrop(document.getElementById('carrierInput'), false);
+        setupDrop(document.getElementById('secretInput'), true);
 
-  <div class="status-bar" id="statusBar">Bereit. Port 9435 aktiv.</div>
-</div>
+        function setupDrop(elem, isSecret) {
+            elem.addEventListener('dragover', (e) => { e.preventDefault(); elem.style.backgroundColor = '#ffffcc'; });
+            elem.addEventListener('dragleave', () => { elem.style.backgroundColor = '#ffffff'; });
+            elem.addEventListener('drop', (e) => {
+                e.preventDefault();
+                elem.style.backgroundColor = '#ffffff';
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (isSecret) {
+                        loadFileAsSecret(file);
+                    } else {
+                        file.text().then(t => elem.value = t);
+                    }
+                }
+            });
+        }
 
-<script>
-let selectedFile = null;
-let extractedBlob = null;
-let extractedFileName = "geheimdatei.bin";
+        document.getElementById('filePicker').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) loadFileAsSecret(e.target.files[0]);
+        });
 
-// Drag & Drop
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
+        function loadFileAsSecret(file) {
+            pickedFileName = file.name;
+            file.arrayBuffer().then(buf => {
+                pickedFileBytes = new Uint8Array(buf);
+                document.getElementById('fileInfo').innerText = `Datei geladen: ${file.name} (${file.size} Bytes)`;
+                document.getElementById('secretInput').value = `[Datei geladen: ${file.name}]`;
+                setStatus(`Datei bereit zum Verstecken: ${file.name}`);
+            });
+        }
 
-dropZone.onclick = () => fileInput.click();
-fileInput.onchange = (e) => {
-  if (e.target.files.length > 0) handleFile(e.target.files[0]);
-};
+        function setStatus(msg) {
+            document.getElementById('status').innerText = msg;
+        }
 
-dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('hover'); };
-dropZone.ondragleave = () => dropZone.classList.remove('hover');
-dropZone.ondrop = (e) => {
-  e.preventDefault();
-  dropZone.classList.remove('hover');
-  if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-};
+        async function doHide() {
+            const carrier = document.getElementById('carrierInput').value.trim() || "Unschuldiger Text.";
+            const secretText = document.getElementById('secretInput').value;
+            const pass = document.getElementById('passphrase').value;
 
-// Clipboard Paste
-window.addEventListener('paste', (e) => {
-  if (e.clipboardData.files.length > 0) {
-    handleFile(e.clipboardData.files[0]);
-  }
-});
+            let payloadBlob;
+            if (pickedFileBytes) {
+                payloadBlob = new Blob([pickedFileBytes]);
+            } else {
+                if (!secretText) {
+                    alert("Bitte gib bei '2. Geheimer Inhalt' einen Text ein!");
+                    return;
+                }
+                payloadBlob = new Blob([new TextEncoder().encode(secretText)]);
+            }
 
-function handleFile(file) {
-  selectedFile = file;
-  document.getElementById('fileLabel').innerText = `Ausgewählt: ${file.name} (${file.size} Bytes)`;
-  setStatus(`Datei geladen: ${file.name}`);
-}
+            const formData = new FormData();
+            formData.append('carrier', carrier);
+            formData.append('password', pass);
+            formData.append('file', payloadBlob, pickedFileName || 'secret.txt');
 
-function setStatus(msg) {
-  document.getElementById('statusBar').innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-}
+            setStatus("Verstecke Daten...");
+            const res = await fetch('/api/hide', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('resultOutput').value = data.stego_text;
+                setStatus("Fertig! Der Text sieht normal aus, enthält aber unsichtbare Bytes.");
+            } else {
+                setStatus("Fehler: " + data.error);
+            }
+        }
 
-async function processHide() {
-  const carrier = document.getElementById('carrierInput').value || "Dies ist ein völlig unschuldiger Trägertext aus dem Jahr 1995.";
-  const pass = document.getElementById('passphrase').value;
-  if (!selectedFile) {
-    alert("Bitte zuerst eine Datei per Drag&Drop oder Klick auswählen!");
-    return;
-  }
+        async function doExtract() {
+            const text = document.getElementById('resultOutput').value || document.getElementById('carrierInput').value;
+            const pass = document.getElementById('passphrase').value;
 
-  setStatus("Enkodiere & Injiziere...");
-  const formData = new FormData();
-  formData.append('carrier', carrier);
-  formData.append('password', pass);
-  formData.append('file', selectedFile);
+            if (!text) {
+                alert("Füge den Text mit den versteckten Daten in das Feld ein!");
+                return;
+            }
 
-  try {
-    const res = await fetch('/api/hide', { method: 'POST', body: formData });
-    const json = await res.json();
-    if (json.success) {
-      document.getElementById('resultOutput').value = json.stego_text;
-      setStatus(`Erfolgreich versteckt! Sichtbare Länge: ${json.stego_text.length} Zeichen.`);
-    } else {
-      setStatus(`Fehler: ${json.error}`);
-    }
-  } catch (err) {
-    setStatus("Netzwerkfehler!");
-  }
-}
+            setStatus("Extrahiere...");
+            const res = await fetch('/api/extract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stego_text: text, password: pass })
+            });
 
-async function processExtract() {
-  const text = document.getElementById('resultOutput').value || document.getElementById('carrierInput').value;
-  const pass = document.getElementById('passphrase').value;
+            if (res.ok) {
+                const blob = await res.blob();
+                const txt = await blob.text();
+                // Prüfen ob es lesbarer Text ist
+                document.getElementById('secretInput').value = txt;
+                document.getElementById('resultOutput').value = txt;
+                setStatus(`Erfolgreich extrahiert (${blob.size} Bytes)!`);
+            } else {
+                const err = await res.json();
+                setStatus("Fehler bei Extraktion: " + err.error);
+            }
+        }
 
-  setStatus("Extrahiere Binärdaten...");
-  try {
-    const res = await fetch('/api/extract', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stego_text: text, password: pass })
-    });
+        function copyResult() {
+            navigator.clipboard.writeText(document.getElementById('resultOutput').value);
+            setStatus("Ergebnis kopiert!");
+        }
 
-    if (res.ok) {
-      const disp = res.headers.get('Content-Disposition') || '';
-      const match = disp.match(/filename="(.+)"/);
-      extractedFileName = match ? match[1] : "recovered.bin";
-      extractedBlob = await res.blob();
-
-      document.getElementById('dlExtractedBtn').style.display = 'inline-block';
-      document.getElementById('dlExtractedBtn').innerText = `Download: ${extractedFileName}`;
-      setStatus(`Extrahierung erfolgreich: ${extractedFileName} (${extractedBlob.size} Bytes)`);
-    } else {
-      const err = await res.json();
-      setStatus(`Fehler: ${err.error}`);
-    }
-  } catch (e) {
-    setStatus("Fehler bei Extraktion!");
-  }
-}
-
-function copyResult() {
-  navigator.clipboard.writeText(document.getElementById('resultOutput').value);
-  setStatus("In Zwischenablage kopiert!");
-}
-
-function downloadResultText() {
-  const blob = new Blob([document.getElementById('resultOutput').value], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = "ghostbyte_stego.txt";
-  a.click();
-}
-
-function downloadExtractedBlob() {
-  if (!extractedBlob) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(extractedBlob);
-  a.download = extractedFileName;
-  a.click();
-}
-</script>
+        function downloadResult() {
+            const blob = new Blob([document.getElementById('resultOutput').value], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "ghostbyte_fertig.txt";
+            a.click();
+        }
+    </script>
 </body>
+
 </html>
