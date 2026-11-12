@@ -1,4 +1,5 @@
 import struct
+import os
 from core.fec import decode_fec
 
 ZW_MAP = {
@@ -10,6 +11,17 @@ ZW_MAP = {
 REV_ZW = {v: k for k, v in ZW_MAP.items()}
 
 MAGIC_START = "\u200B\u200D\u200B\u200D"
+
+def unpack_file(blob: bytes) -> tuple[str, bytes]:
+    if len(blob) < 9 or blob[:4] != b"GHST":
+        return "recovered.bin", blob
+    name_len, data_len = struct.unpack(">BI", blob[4:9])
+    if len(blob) < 9 + name_len:
+        return "recovered.bin", blob[9:]
+    raw_name = blob[9:9 + name_len].decode("utf-8", errors="replace")
+    safe_name = os.path.basename(raw_name) or "recovered.bin"
+    file_data = blob[9 + name_len:9 + name_len + data_len]
+    return safe_name, file_data
 
 def decode_zw_to_bytes(text: str) -> tuple[bytes, dict]:
     start_idx = text.find(MAGIC_START)

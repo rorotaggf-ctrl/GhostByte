@@ -1,389 +1,556 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-    <meta charset="utf-8">
-    <title>GhostByte Steganography</title>
-    <style>
-        body {
-            background-color: #008080;
-            color: #000000;
-            font-family: "MS Sans Serif", Geneva, Tahoma, sans-serif;
-            margin: 20px;
-        }
-
-        .win-frame {
-            background-color: #c0c0c0;
-            border: 3px outset #ffffff;
-            padding: 12px;
-            max-width: 820px;
-            margin: 0 auto;
-            box-shadow: 4px 4px 0px #000000;
-            box-sizing: border-box;
-        }
-
-        .win-bar {
-            background: linear-gradient(90deg, #000080, #1084d0);
-            color: #ffffff;
-            padding: 4px 8px;
-            font-weight: bold;
-            font-size: 13px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .retro-btn {
-            background-color: #c0c0c0;
-            border: 2px outset #ffffff;
-            font-size: 11px;
-            cursor: pointer;
-            padding: 3px 10px;
-            color: #000000;
-            font-weight: bold;
-            font-family: inherit;
-        }
-
-        .retro-btn:active {
-            border: 2px inset #ffffff;
-        }
-
-        .settings-panel {
-            display: none;
-            background-color: #dcdcdc;
-            border: 2px groove #ffffff;
-            padding: 8px;
-            margin-bottom: 12px;
-            font-size: 12px;
-        }
-
-        fieldset {
-            border: 2px groove #ffffff;
-            margin-bottom: 12px;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        legend {
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 95px;
-            border: 2px inset #ffffff;
-            font-family: monospace;
-            font-size: 13px;
-            box-sizing: border-box;
-            display: block;
-            margin-top: 4px;
-            margin-bottom: 6px;
-            resize: vertical;
-        }
-
-        .action-btn {
-            background-color: #c0c0c0;
-            border: 2px outset #ffffff;
-            padding: 6px 18px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 2px 4px;
-            font-family: inherit;
-        }
-
-        .action-btn:active {
-            border: 2px inset #ffffff;
-        }
-
-        .drop-hint {
-            font-size: 11px;
-            color: #333333;
-        }
-
-        .status-bar {
-            border: 2px inset #ffffff;
-            background: #c0c0c0;
-            padding: 4px 8px;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-
-        input[type="password"] {
-            border: 2px inset #ffffff;
-            padding: 3px 5px;
-            font-size: 12px;
-            font-family: inherit;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>GhostByte Steganography</title>
+  <style>
+    body {
+      background-color: #008080;
+      color: #000000;
+      font-family: "MS Sans Serif", Geneva, Tahoma, sans-serif;
+      margin: 20px;
+    }
+    .win-frame {
+      background-color: #c0c0c0;
+      border: 3px outset #ffffff;
+      padding: 12px;
+      max-width: 820px;
+      margin: 0 auto;
+      box-shadow: 4px 4px 0px #000000;
+      box-sizing: border-box;
+    }
+    .win-bar {
+      background: linear-gradient(90deg, #000080, #1084d0);
+      color: #ffffff;
+      padding: 4px 8px;
+      font-weight: bold;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .retro-btn {
+      background-color: #c0c0c0;
+      border: 2px outset #ffffff;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 3px 10px;
+      color: #000000;
+      font-weight: bold;
+      font-family: inherit;
+    }
+    .retro-btn:active {
+      border: 2px inset #ffffff;
+    }
+    .settings-panel {
+      display: none;
+      background-color: #dcdcdc;
+      border: 2px groove #ffffff;
+      padding: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    fieldset {
+      border: 2px groove #ffffff;
+      margin-bottom: 12px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    legend {
+      font-weight: bold;
+      font-size: 12px;
+    }
+    textarea {
+      width: 100%;
+      height: 90px;
+      border: 2px inset #ffffff;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      display: block;
+      margin-top: 4px;
+      margin-bottom: 6px;
+      resize: vertical;
+    }
+    .action-btn {
+      background-color: #c0c0c0;
+      border: 2px outset #ffffff;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 2px 4px;
+      font-family: inherit;
+    }
+    .action-btn:active {
+      border: 2px inset #ffffff;
+    }
+    .drop-hint {
+      font-size: 11px;
+      color: #333333;
+    }
+    .status-bar {
+      border: 2px inset #ffffff;
+      background: #c0c0c0;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-family: monospace;
+      margin-top: 10px;
+      word-break: break-all;
+    }
+    input[type="password"] {
+      border: 2px inset #ffffff;
+      padding: 3px 5px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+  </style>
 </head>
-
 <body>
 
-    <div class="win-frame">
-        <div class="win-bar">
-            <span id="txtTitle">GhostByte Steganography Drive</span>
-            <button class="retro-btn" onclick="toggleSettings()" id="btnSettingsToggle">[ OPTIONEN ]</button>
-        </div>
+<div class="win-frame">
+  <div class="win-bar">
+    <span id="txtTitle">GhostByte Steganography Drive</span>
+    <button class="retro-btn" onclick="toggleSettings()" id="btnSettingsToggle">[ OPTIONEN ]</button>
+  </div>
 
-        <div class="settings-panel" id="settingsPanel">
-            <b id="txtSettings">Einstellungen:</b>
-            <button class="retro-btn" onclick="resetForm()" id="btnReset">Alles zurücksetzen</button>
-            <button class="retro-btn" onclick="toggleLang()" id="btnLang">Sprache: Deutsch</button>
-        </div>
+  <div class="settings-panel" id="settingsPanel">
+    <b id="txtSettings">Einstellungen:</b>
+    <button class="retro-btn" onclick="resetForm()" id="btnReset">Alles zurücksetzen</button>
+    <button class="retro-btn" onclick="toggleLang()" id="btnLang">Sprache: Deutsch</button>
+  </div>
 
-        <fieldset>
-            <legend id="lblCarrierSec">1. Sichtbarer Trägertext</legend>
-            <div class="drop-hint" id="hintCarrier">Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:</div>
-            <textarea id="carrierInput" placeholder="Dies ist ein völlig unschuldiger Trägertext..."></textarea>
-            <span id="lblPass">Passwort (OPTIONAL):</span>
-            <input type="password" id="passphrase" placeholder="(OPTIONAL)">
-        </fieldset>
+  <fieldset>
+    <legend id="lblCarrierSec">1. Sichtbarer Trägertext</legend>
+    <div class="drop-hint" id="hintCarrier">Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:</div>
+    <textarea id="carrierInput" placeholder="Dies ist ein völlig unschuldiger Trägertext..."></textarea>
+    <span id="lblPass">Passwort (OPTIONAL):</span> 
+    <input type="password" id="passphrase" placeholder="(OPTIONAL)">
+  </fieldset>
 
-        <fieldset>
-            <legend id="lblSecretSec">2. Geheimer Inhalt</legend>
-            <div class="drop-hint" id="hintSecret">Geheimen Text direkt hier eintippen oder Datei reinziehen:</div>
-            <textarea id="secretInput" placeholder="Hier den geheimen Text eingeben..."></textarea>
-            <input type="file" id="filePicker" style="display:none;">
-            <button class="retro-btn" onclick="document.getElementById('filePicker').click()" id="btnPickFile">Datei
-                anhängen</button>
-            <span id="fileInfo" style="font-size:11px; margin-left: 6px;"></span>
-        </fieldset>
+  <fieldset>
+    <legend id="lblSecretSec">2. Geheimer Inhalt (Text oder beliebige Datei: ZIP, JPG, PNG, EXE...)</legend>
+    <div class="drop-hint" id="hintSecret">Geheimen Text eintippen oder beliebige Datei per Drag & Drop reinziehen:</div>
+    <textarea id="secretInput" placeholder="Geheimer Text oder Datei hier reinziehen..."></textarea>
+    <input type="file" id="filePicker" style="display:none;">
+    <button class="retro-btn" onclick="document.getElementById('filePicker').click()" id="btnPickFile">Datei auswählen (ZIP/Bild/etc.)</button>
+    <button class="retro-btn" onclick="clearAttachedFile()" id="btnClearFile" style="display:none;">Datei entfernen</button>
+    <span id="fileInfo" style="font-size:11px; margin-left: 6px; font-weight:bold;"></span>
+  </fieldset>
 
-        <div style="text-align: center; margin: 10px 0;">
-            <button class="action-btn" onclick="doHide()" id="btnHide">[ TEXT VERSTECKEN ]</button>
-            <button class="action-btn" onclick="doExtract()" id="btnExtract">[ TEXT EXTRAHIEREN ]</button>
-        </div>
+  <div style="text-align: center; margin: 10px 0;">
+    <button class="action-btn" onclick="doHide()" id="btnHide">[ VERSTECKEN ]</button>
+    <button class="action-btn" onclick="doExtract()" id="btnExtract">[ EXTRAHIEREN ]</button>
+  </div>
 
-        <fieldset>
-            <legend id="lblResultSec">3. Ergebnis</legend>
-            <textarea id="resultOutput"
-                placeholder="Hier erscheint das Ergebnis (der präparierte Trägertext mit den unsichtbaren Zeichen)..."></textarea>
-            <div style="margin-top:4px;">
-                <button class="retro-btn" onclick="copyResult()" id="btnCopy">Kopieren</button>
-                <button class="retro-btn" onclick="downloadResult()" id="btnSave">Als TXT speichern</button>
-            </div>
-        </fieldset>
-
-        <div class="status-bar" id="status">Bereit. Port 9435.</div>
+  <fieldset>
+    <legend id="lblResultSec">3. Ergebnis</legend>
+    <textarea id="resultOutput" placeholder="Hier erscheint der Trägertext mit den unsichtbaren Bytes..."></textarea>
+    <div style="margin-top:4px;">
+      <button class="retro-btn" onclick="copyResult()" id="btnCopy">Text kopieren</button>
+      <button class="retro-btn" onclick="downloadResult()" id="btnSave">Carrier als TXT speichern</button>
+      <button class="retro-btn" onclick="downloadRecoveredBinary()" id="btnDownloadBin" style="display:none; background-color:#d4ffd4;">Extrahierte Datei herunterladen</button>
     </div>
+  </fieldset>
 
-    <script>
-        let pickedFileContent = null;
-        let currentLang = 'de';
+  <div class="status-bar" id="status">Bereit.</div>
+</div>
 
-        const langPacks = {
-            de: {
-                title: "GhostByte Steganography Drive",
-                settingsToggle: "[ OPTIONEN ]",
-                settings: "Einstellungen:",
-                reset: "Alles zurücksetzen",
-                langBtn: "Sprache: Deutsch",
-                carrierSec: "1. Sichtbarer Trägertext",
-                hintCarrier: "Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:",
-                carrierHolder: "Dies ist ein völlig unschuldiger Trägertext...",
-                pass: "Passwort (OPTIONAL):",
-                passHolder: "(OPTIONAL)",
-                secretSec: "2. Geheimer Inhalt",
-                hintSecret: "Geheimen Text direkt hier eintippen oder Datei reinziehen:",
-                secretHolder: "Hier den geheimen Text eingeben...",
-                pickFile: "Datei anhängen",
-                hide: "[ TEXT VERSTECKEN ]",
-                extract: "[ TEXT EXTRAHIEREN ]",
-                resultSec: "3. Ergebnis",
-                resultHolder: "Hier erscheint das Ergebnis (der präparierte Trägertext mit den unsichtbaren Zeichen)...",
-                copy: "Kopieren",
-                save: "Als TXT speichern",
-                ready: "Bereit. Port 9435.",
-                copied: "Ergebnis kopiert!",
-                doneHide: "Erfolg! Unsichtbare Daten eingebettet.",
-                doneExt: "Extrahierung erfolgreich!",
-                errEmpty: "Bitte bei '2. Geheimer Inhalt' einen Text eingeben!"
-            },
-            en: {
-                title: "GhostByte Steganography Drive",
-                settingsToggle: "[ OPTIONS ]",
-                settings: "Settings:",
-                reset: "Reset Form",
-                langBtn: "Language: English",
-                carrierSec: "1. Visible Carrier Text",
-                hintCarrier: "Type text, paste, or drop a TXT file:",
-                carrierHolder: "This is ordinary, visible text...",
-                pass: "Password (OPTIONAL):",
-                passHolder: "(OPTIONAL)",
-                secretSec: "2. Secret Content",
-                hintSecret: "Type secret message here or drop a file:",
-                secretHolder: "Type your secret text here...",
-                pickFile: "Attach File",
-                hide: "[ HIDE DATA ]",
-                extract: "[ EXTRACT DATA ]",
-                resultSec: "3. Result",
-                resultHolder: "Output will appear here (carrier text holding invisible characters)...",
-                copy: "Copy",
-                save: "Save as TXT",
-                ready: "Ready. Port 9435.",
-                copied: "Result copied!",
-                doneHide: "Success! Invisible data embedded.",
-                doneExt: "Extraction successful!",
-                errEmpty: "Please enter text under '2. Secret Content'!"
-            }
-        };
+<script>
+let currentLang = 'de';
+let attachedBytes = null;
+let attachedName = "secret.txt";
+let recoveredBytes = null;
+let recoveredName = "recovered.bin";
 
-        function toggleSettings() {
-            const panel = document.getElementById('settingsPanel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
+const langPacks = {
+  de: {
+    title: "GhostByte Steganography Drive",
+    settingsToggle: "[ OPTIONEN ]",
+    settings: "Einstellungen:",
+    reset: "Alles zurücksetzen",
+    langBtn: "Sprache: Deutsch",
+    carrierSec: "1. Sichtbarer Trägertext",
+    hintCarrier: "Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:",
+    carrierHolder: "Dies ist ein völlig unschuldiger Trägertext...",
+    pass: "Passwort (OPTIONAL):",
+    passHolder: "(OPTIONAL)",
+    secretSec: "2. Geheimer Inhalt (Text oder beliebige Datei: ZIP, JPG, PNG, EXE...)",
+    hintSecret: "Geheimen Text eintippen oder beliebige Datei per Drag & Drop reinziehen:",
+    secretHolder: "Geheimer Text oder Datei hier reinziehen...",
+    pickFile: "Datei auswählen (ZIP/Bild/etc.)",
+    hide: "[ VERSTECKEN ]",
+    extract: "[ EXTRAHIEREN ]",
+    resultSec: "3. Ergebnis",
+    resultHolder: "Hier erscheint der Trägertext mit den unsichtbaren Bytes...",
+    copy: "Text kopieren",
+    save: "Carrier als TXT speichern",
+    ready: "Bereit.",
+    copied: "Stego-Text in Zwischenablage kopiert!",
+    errEmpty: "Bitte bei '2. Geheimer Inhalt' einen Text eingeben oder eine Datei reinziehen!"
+  },
+  en: {
+    title: "GhostByte Steganography Drive",
+    settingsToggle: "[ OPTIONS ]",
+    settings: "Settings:",
+    reset: "Reset Form",
+    langBtn: "Language: English",
+    carrierSec: "1. Visible Carrier Text",
+    hintCarrier: "Type text, paste, or drop a TXT file:",
+    carrierHolder: "This is ordinary, visible text...",
+    pass: "Password (OPTIONAL):",
+    passHolder: "(OPTIONAL)",
+    secretSec: "2. Secret Content (Text or ANY file: ZIP, JPG, PNG, EXE...)",
+    hintSecret: "Type secret text or drag & drop any binary file:",
+    secretHolder: "Type secret message or drop any file here...",
+    pickFile: "Attach File (ZIP/Image/etc.)",
+    hide: "[ HIDE DATA ]",
+    extract: "[ EXTRACT DATA ]",
+    resultSec: "3. Result",
+    resultHolder: "Carrier text with embedded invisible bytes will appear here...",
+    copy: "Copy Text",
+    save: "Save Carrier as TXT",
+    ready: "Ready.",
+    copied: "Stego text copied to clipboard!",
+    errEmpty: "Please enter text or attach a file under '2. Secret Content'!"
+  }
+};
 
-        function resetForm() {
-            document.getElementById('carrierInput').value = "";
-            document.getElementById('secretInput').value = "";
-            document.getElementById('passphrase').value = "";
-            document.getElementById('resultOutput').value = "";
-            document.getElementById('fileInfo').innerText = "";
-            pickedFileContent = null;
-            setStatus(langPacks[currentLang].ready);
-        }
+window.onload = () => setStatus(langPacks[currentLang].ready);
 
-        function toggleLang() {
-            currentLang = currentLang === 'de' ? 'en' : 'de';
-            const pack = langPacks[currentLang];
-            document.getElementById('txtTitle').innerText = pack.title;
-            document.getElementById('btnSettingsToggle').innerText = pack.settingsToggle;
-            document.getElementById('txtSettings').innerText = pack.settings;
-            document.getElementById('btnReset').innerText = pack.reset;
-            document.getElementById('btnLang').innerText = pack.langBtn;
-            document.getElementById('lblCarrierSec').innerText = pack.carrierSec;
-            document.getElementById('hintCarrier').innerText = pack.hintCarrier;
-            document.getElementById('carrierInput').placeholder = pack.carrierHolder;
-            document.getElementById('lblPass').innerText = pack.pass;
-            document.getElementById('passphrase').placeholder = pack.passHolder;
-            document.getElementById('lblSecretSec').innerText = pack.secretSec;
-            document.getElementById('hintSecret').innerText = pack.hintSecret;
-            document.getElementById('secretInput').placeholder = pack.secretHolder;
-            document.getElementById('btnPickFile').innerText = pack.pickFile;
-            document.getElementById('btnHide').innerText = pack.hide;
-            document.getElementById('btnExtract').innerText = pack.extract;
-            document.getElementById('lblResultSec').innerText = pack.resultSec;
-            document.getElementById('resultOutput').placeholder = pack.resultHolder;
-            document.getElementById('btnCopy').innerText = pack.copy;
-            document.getElementById('btnSave').innerText = pack.save;
-            setStatus(pack.ready);
-        }
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+}
 
-        function setStatus(msg) {
-            document.getElementById('status').innerText = msg;
-        }
+function resetForm() {
+  document.getElementById('carrierInput').value = "";
+  document.getElementById('secretInput').value = "";
+  document.getElementById('passphrase').value = "";
+  document.getElementById('resultOutput').value = "";
+  clearAttachedFile();
+  document.getElementById('btnDownloadBin').style.display = "none";
+  recoveredBytes = null;
+  setStatus(langPacks[currentLang].ready);
+}
 
-        // Drag & Drop
-        setupDrop(document.getElementById('carrierInput'), false);
-        setupDrop(document.getElementById('secretInput'), true);
+function clearAttachedFile() {
+  attachedBytes = null;
+  attachedName = "secret.txt";
+  document.getElementById('fileInfo').innerText = "";
+  document.getElementById('btnClearFile').style.display = "none";
+  document.getElementById('secretInput').disabled = false;
+  document.getElementById('secretInput').value = "";
+}
 
-        function setupDrop(elem, isSecret) {
-            elem.addEventListener('dragover', (e) => { e.preventDefault(); elem.style.backgroundColor = '#ffffcc'; });
-            elem.addEventListener('dragleave', () => { elem.style.backgroundColor = '#ffffff'; });
-            elem.addEventListener('drop', (e) => {
-                e.preventDefault();
-                elem.style.backgroundColor = '#ffffff';
-                if (e.dataTransfer.files.length > 0) {
-                    const file = e.dataTransfer.files[0];
-                    file.text().then(t => {
-                        if (isSecret) {
-                            pickedFileContent = t;
-                            document.getElementById('fileInfo').innerText = `[${file.name}]`;
-                            elem.value = t;
-                        } else {
-                            elem.value = t;
-                        }
-                    });
-                }
-            });
-        }
+function toggleLang() {
+  currentLang = currentLang === 'de' ? 'en' : 'de';
+  const pack = langPacks[currentLang];
+  document.getElementById('txtTitle').innerText = pack.title;
+  document.getElementById('btnSettingsToggle').innerText = pack.settingsToggle;
+  document.getElementById('txtSettings').innerText = pack.settings;
+  document.getElementById('btnReset').innerText = pack.reset;
+  document.getElementById('btnLang').innerText = pack.langBtn;
+  document.getElementById('lblCarrierSec').innerText = pack.carrierSec;
+  document.getElementById('hintCarrier').innerText = pack.hintCarrier;
+  document.getElementById('carrierInput').placeholder = pack.carrierHolder;
+  document.getElementById('lblPass').innerText = pack.pass;
+  document.getElementById('passphrase').placeholder = pack.passHolder;
+  document.getElementById('lblSecretSec').innerText = pack.secretSec;
+  document.getElementById('hintSecret').innerText = pack.hintSecret;
+  document.getElementById('secretInput').placeholder = pack.secretHolder;
+  document.getElementById('btnPickFile').innerText = pack.pickFile;
+  document.getElementById('btnHide').innerText = pack.hide;
+  document.getElementById('btnExtract').innerText = pack.extract;
+  document.getElementById('lblResultSec').innerText = pack.resultSec;
+  document.getElementById('resultOutput').placeholder = pack.resultHolder;
+  document.getElementById('btnCopy').innerText = pack.copy;
+  document.getElementById('btnSave').innerText = pack.save;
+  setStatus(pack.ready);
+}
 
-        document.getElementById('filePicker').addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                file.text().then(t => {
-                    pickedFileContent = t;
-                    document.getElementById('fileInfo').innerText = `[${file.name}]`;
-                    document.getElementById('secretInput').value = t;
-                });
-            }
-        });
+function setStatus(msg) {
+  document.getElementById('status').innerText = msg;
+}
 
-        async function doHide() {
-            const carrier = document.getElementById('carrierInput').value.trim() || "Normaler Trägertext.";
-            const secret = document.getElementById('secretInput').value;
-            const pass = document.getElementById('passphrase').value;
+async function sha256Hex(uint8arr) {
+  const hashBuf = await crypto.subtle.digest('SHA-256', uint8arr);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-            if (!secret.trim()) {
-                alert(langPacks[currentLang].errEmpty);
-                return;
-            }
+// Drag & Drop
+setupDrop(document.getElementById('carrierInput'), false);
+setupDrop(document.getElementById('secretInput'), true);
 
-            setStatus("Verarbeite & kodiere...");
-            try {
-                const res = await fetch('/api/hide', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ carrier: carrier, secret: secret, password: pass })
-                });
-                const data = await res.json();
-                if (data.success && data.stego_text) {
-                    document.getElementById('resultOutput').value = data.stego_text;
-                    setStatus(`${langPacks[currentLang].doneHide} (${data.bytes_hidden} Bytes Nutzlast verborgen).`);
-                } else {
-                    setStatus("Fehler: " + (data.error || "Keine Ausgabe erhalten"));
-                }
-            } catch (err) {
-                setStatus("Netzwerkfehler beim Serveraufruf!");
-            }
-        }
+function setupDrop(elem, isSecret) {
+  elem.addEventListener('dragover', (e) => { e.preventDefault(); elem.style.backgroundColor = '#ffffcc'; });
+  elem.addEventListener('dragleave', () => { elem.style.backgroundColor = '#ffffff'; });
+  elem.addEventListener('drop', (e) => {
+    e.preventDefault();
+    elem.style.backgroundColor = '#ffffff';
+    if (e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (isSecret) {
+        loadBinaryFile(file);
+      } else {
+        file.text().then(t => elem.value = t);
+      }
+    }
+  });
+}
 
-        async function doExtract() {
-            const text = document.getElementById('resultOutput').value || document.getElementById('carrierInput').value;
-            const pass = document.getElementById('passphrase').value;
+document.getElementById('filePicker').addEventListener('change', (e) => {
+  if (e.target.files.length > 0) loadBinaryFile(e.target.files[0]);
+});
 
-            if (!text.trim()) {
-                alert("Kein Text vorhanden zum Extrahieren!");
-                return;
-            }
+async function loadBinaryFile(file) {
+  const buf = await file.arrayBuffer();
+  attachedBytes = new Uint8Array(buf);
+  attachedName = file.name;
+  const hash = await sha256Hex(attachedBytes);
+  document.getElementById('fileInfo').innerText = `${file.name} (${file.size} Bytes)`;
+  document.getElementById('btnClearFile').style.display = "inline-block";
+  document.getElementById('secretInput').value = `[BINÄRDATEI GELADEN: ${file.name} | ${file.size} Bytes]`;
+  document.getElementById('secretInput').disabled = true;
+  setStatus(`Datei geladen: ${file.name} | SHA-256: ${hash}`);
+}
 
-            setStatus("Extrahiere unsichtbare Daten...");
-            try {
-                const res = await fetch('/api/extract', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ stego_text: text, password: pass })
-                });
+// --- GALOIS FIELD GF(2^8) FEC + ZERO-WIDTH ENGINE ---
+const GF_EXP = new Uint8Array(512);
+const GF_LOG = new Uint8Array(256);
+(() => {
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    GF_EXP[i] = x;
+    GF_LOG[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
+})();
 
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('secretInput').value = data.secret;
-                    document.getElementById('resultOutput').value = data.secret;
-                    setStatus(langPacks[currentLang].doneExt);
-                } else {
-                    setStatus("Fehler bei Extraktion: " + data.error);
-                }
-            } catch (err) {
-                setStatus("Fehler beim Extrahieren!");
-            }
-        }
+function gfMul(a, b) {
+  if (a === 0 || b === 0) return 0;
+  return GF_EXP[GF_LOG[a] + GF_LOG[b]];
+}
+function gfInv(a) {
+  return GF_EXP[255 - GF_LOG[a]];
+}
 
-        function copyResult() {
-            navigator.clipboard.writeText(document.getElementById('resultOutput').value);
-            setStatus(langPacks[currentLang].copied);
-        }
+function encodeFEC(data) {
+  const blocks = Math.ceil(data.length / 4);
+  const out = new Uint8Array(blocks * 7);
+  let ptr = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const origLen = Math.min(4, data.length - i);
+    const b0 = data[i] || 0, b1 = data[i+1] || 0, b2 = data[i+2] || 0, b3 = data[i+3] || 0;
+    const p0 = b0 ^ b1 ^ b2 ^ b3;
+    const p1 = gfMul(1, b0) ^ gfMul(2, b1) ^ gfMul(4, b2) ^ gfMul(8, b3);
+    out[ptr++] = origLen;
+    out[ptr++] = b0; out[ptr++] = b1; out[ptr++] = b2; out[ptr++] = b3;
+    out[ptr++] = p0; out[ptr++] = p1;
+  }
+  return out;
+}
 
-        function downloadResult() {
-            const blob = new Blob([document.getElementById('resultOutput').value], { type: 'text/plain;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = "ghostbyte_stego.txt";
-            a.click();
-        }
-    </script>
+function decodeFEC(stream) {
+  const out = [];
+  for (let i = 0; i < stream.length; i += 7) {
+    if (i + 7 > stream.length) {
+      for (let j = i + 1; j < stream.length; j++) out.push(stream[j]);
+      break;
+    }
+    let origLen = stream[i];
+    if (origLen === 0 || origLen > 4) origLen = 4;
+    const d = [stream[i+1], stream[i+2], stream[i+3], stream[i+4]];
+    const p0 = stream[i+5], p1 = stream[i+6];
+    const s0 = d[0] ^ d[1] ^ d[2] ^ d[3] ^ p0;
+    const s1 = gfMul(1, d[0]) ^ gfMul(2, d[1]) ^ gfMul(4, d[2]) ^ gfMul(8, d[3]) ^ p1;
+    const coeff = [1, 2, 4, 8];
+    if (s0 !== 0 || s1 !== 0) {
+      for (let pos = 0; pos < 4; pos++) {
+        if (gfMul(coeff[pos], s0) === s1) { d[pos] ^= s0; break; }
+      }
+    }
+    for (let k = 0; k < origLen; k++) out.push(d[k]);
+  }
+  return new Uint8Array(out);
+}
+
+const ZW_MAP = { '00': '\u200B', '01': '\u200C', '10': '\u200D', '11': '\uFEFF' };
+const REV_ZW = { '\u200B': '00', '\u200C': '01', '\u200D': '10', '\uFEFF': '11' };
+const MAGIC_START = "\u200B\u200D\u200B\u200D";
+
+function packHeader(filename, bytes) {
+  const nameBytes = new TextEncoder().encode(filename).slice(0, 255);
+  const out = new Uint8Array(9 + nameBytes.length + bytes.length);
+  out.set([0x47, 0x48, 0x53, 0x54], 0); // "GHST"
+  out[4] = nameBytes.length;
+  new DataView(out.buffer).setUint32(5, bytes.length, false);
+  out.set(nameBytes, 9);
+  out.set(bytes, 9 + nameBytes.length);
+  return out;
+}
+
+function unpackHeader(blob) {
+  if (blob.length < 9 || blob[0] !== 0x47 || blob[1] !== 0x48 || blob[2] !== 0x53 || blob[3] !== 0x54) {
+    return { name: "recovered.bin", data: blob };
+  }
+  const nameLen = blob[4];
+  const dataLen = new DataView(blob.buffer, blob.byteOffset, blob.byteLength).getUint32(5, false);
+  const name = new TextDecoder().decode(blob.slice(9, 9 + nameLen)) || "recovered.bin";
+  const data = blob.slice(9 + nameLen, 9 + nameLen + dataLen);
+  return { name, data };
+}
+
+async function browserCrypto(bytes, password, encrypt) {
+  if (!password) return bytes;
+  const keyHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+  const key = await crypto.subtle.importKey('raw', keyHash, { name: 'AES-CTR' }, false, ['encrypt', 'decrypt']);
+
+  if (encrypt) {
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+    const cipherBuf = await crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, bytes);
+    const out = new Uint8Array(16 + cipherBuf.byteLength);
+    out.set(iv, 0);
+    out.set(new Uint8Array(cipherBuf), 16);
+    return out;
+  } else {
+    const iv = bytes.slice(0, 16);
+    const cipher = bytes.slice(16);
+    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, cipher);
+    return new Uint8Array(plainBuf);
+  }
+}
+
+function encodeZW(bytes) {
+  const fec = encodeFEC(bytes);
+  const payload = new Uint8Array(4 + fec.length);
+  new DataView(payload.buffer).setUint32(0, fec.length, false);
+  payload.set(fec, 4);
+
+  let out = MAGIC_START;
+  for (let b of payload) {
+    const bits = b.toString(2).padStart(8, '0');
+    out += ZW_MAP[bits.slice(0, 2)] + ZW_MAP[bits.slice(2, 4)] + ZW_MAP[bits.slice(4, 6)] + ZW_MAP[bits.slice(6, 8)];
+  }
+  return out;
+}
+
+function decodeZW(text) {
+  const start = text.indexOf(MAGIC_START);
+  const raw = start !== -1 ? text.slice(start + MAGIC_START.length) : text;
+
+  let bitStr = "";
+  for (let ch of raw) {
+    if (REV_ZW[ch]) bitStr += REV_ZW[ch];
+  }
+  if (bitStr.length < 8) throw new Error("Keine GhostByte-Daten gefunden!");
+
+  const usableBits = Math.floor(bitStr.length / 8) * 8;
+  const allBytes = new Uint8Array(usableBits / 8);
+  for (let i = 0; i < allBytes.length; i++) {
+    allBytes[i] = parseInt(bitStr.slice(i * 8, (i + 1) * 8), 2);
+  }
+
+  let fecStream = allBytes;
+  let truncated = true;
+  if (start !== -1 && allBytes.length >= 4) {
+    const expectedLen = new DataView(allBytes.buffer).getUint32(0, false);
+    fecStream = allBytes.slice(4, 4 + expectedLen);
+    truncated = fecStream.length < expectedLen;
+  }
+  return { bytes: decodeFEC(fecStream), truncated };
+}
+
+async function doHide() {
+  const carrier = document.getElementById('carrierInput').value.trim() || "Normaler Trägertext.";
+  const pass = document.getElementById('passphrase').value;
+
+  let rawBytes, fname;
+  if (attachedBytes) {
+    rawBytes = attachedBytes;
+    fname = attachedName;
+  } else {
+    const txt = document.getElementById('secretInput').value;
+    if (!txt.trim()) {
+      alert(langPacks[currentLang].errEmpty);
+      return;
+    }
+    rawBytes = new TextEncoder().encode(txt);
+    fname = "message.txt";
+  }
+
+  try {
+    const origHash = await sha256Hex(rawBytes);
+    const packed = packHeader(fname, rawBytes);
+    const encBytes = await browserCrypto(packed, pass, true);
+    const zwText = encodeZW(encBytes);
+    const stegoText = carrier + "\n\n" + zwText;
+
+    document.getElementById('resultOutput').value = stegoText;
+    setStatus(`Versteckt: ${fname} (${rawBytes.length} Bytes) | Original SHA-256: ${origHash}`);
+  } catch (err) {
+    setStatus("Fehler: " + err.message);
+  }
+}
+
+async function doExtract() {
+  const text = document.getElementById('resultOutput').value || document.getElementById('carrierInput').value;
+  const pass = document.getElementById('passphrase').value;
+
+  if (!text.trim()) {
+    alert("Kein Text vorhanden!");
+    return;
+  }
+
+  try {
+    const { bytes: rawDec, truncated } = decodeZW(text);
+    const decBytes = await browserCrypto(rawDec, pass, false);
+    const { name, data } = unpackHeader(decBytes);
+    const recHash = await sha256Hex(data);
+
+    recoveredBytes = data;
+    recoveredName = name;
+
+    const dlBtn = document.getElementById('btnDownloadBin');
+    dlBtn.style.display = "inline-block";
+    dlBtn.innerText = `Download: ${name} (${data.length} Bytes)`;
+
+    // Falls Textdatei, auch direkt anzeigen
+    if (name.endsWith(".txt")) {
+      document.getElementById('resultOutput').value = new TextDecoder().decode(data);
+    }
+
+    const warn = truncated ? " [PARTIAL RECOVERY: Text war abgeschnitten!]" : "";
+    setStatus(`Extrahiert: ${name} (${data.length} Bytes) | SHA-256: ${recHash}${warn}`);
+  } catch (err) {
+    setStatus("Fehler: " + err.message);
+  }
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(document.getElementById('resultOutput').value);
+  setStatus(langPacks[currentLang].copied);
+}
+
+function downloadResult() {
+  const blob = new Blob([document.getElementById('resultOutput').value], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "ghostbyte_carrier.txt";
+  a.click();
+}
+
+function downloadRecoveredBinary() {
+  if (!recoveredBytes) return;
+  const blob = new Blob([recoveredBytes], { type: 'application/octet-stream' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = recoveredName;
+  a.click();
+}
+</script>
 </body>
-
 </html>

@@ -63,7 +63,7 @@
     }
     textarea {
       width: 100%;
-      height: 95px;
+      height: 90px;
       border: 2px inset #ffffff;
       font-family: monospace;
       font-size: 13px;
@@ -93,9 +93,11 @@
     .status-bar {
       border: 2px inset #ffffff;
       background: #c0c0c0;
-      padding: 4px 8px;
-      font-size: 12px;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-family: monospace;
       margin-top: 10px;
+      word-break: break-all;
     }
     input[type="password"] {
       border: 2px inset #ffffff;
@@ -123,30 +125,32 @@
     <legend id="lblCarrierSec">1. Sichtbarer Trägertext</legend>
     <div class="drop-hint" id="hintCarrier">Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:</div>
     <textarea id="carrierInput" placeholder="Dies ist ein völlig unschuldiger Trägertext..."></textarea>
-    <span id="lblPass">Passwort (Optional):</span> 
-    <input type="password" id="passphrase" placeholder="(Optional)">
+    <span id="lblPass">Passwort (OPTIONAL):</span> 
+    <input type="password" id="passphrase" placeholder="(OPTIONAL)">
   </fieldset>
 
   <fieldset>
-    <legend id="lblSecretSec">2. Geheimer Inhalt</legend>
-    <div class="drop-hint" id="hintSecret">Geheimen Text direkt hier eintippen oder Datei reinziehen:</div>
-    <textarea id="secretInput" placeholder="Hier den geheimen Text eingeben..."></textarea>
+    <legend id="lblSecretSec">2. Geheimer Inhalt (Text oder beliebige Datei: ZIP, JPG, PNG, EXE...)</legend>
+    <div class="drop-hint" id="hintSecret">Geheimen Text eintippen oder beliebige Datei per Drag & Drop reinziehen:</div>
+    <textarea id="secretInput" placeholder="Geheimer Text oder Datei hier reinziehen..."></textarea>
     <input type="file" id="filePicker" style="display:none;">
-    <button class="retro-btn" onclick="document.getElementById('filePicker').click()" id="btnPickFile">Datei anhängen</button>
-    <span id="fileInfo" style="font-size:11px; margin-left: 6px;"></span>
+    <button class="retro-btn" onclick="document.getElementById('filePicker').click()" id="btnPickFile">Datei auswählen (ZIP/Bild/etc.)</button>
+    <button class="retro-btn" onclick="clearAttachedFile()" id="btnClearFile" style="display:none;">Datei entfernen</button>
+    <span id="fileInfo" style="font-size:11px; margin-left: 6px; font-weight:bold;"></span>
   </fieldset>
 
   <div style="text-align: center; margin: 10px 0;">
-    <button class="action-btn" onclick="doHide()" id="btnHide">[ TEXT VERSTECKEN ]</button>
-    <button class="action-btn" onclick="doExtract()" id="btnExtract">[ TEXT EXTRAHIEREN ]</button>
+    <button class="action-btn" onclick="doHide()" id="btnHide">[ VERSTECKEN ]</button>
+    <button class="action-btn" onclick="doExtract()" id="btnExtract">[ EXTRAHIEREN ]</button>
   </div>
 
   <fieldset>
     <legend id="lblResultSec">3. Ergebnis</legend>
-    <textarea id="resultOutput" placeholder="Hier erscheint das Ergebnis (der präparierte Trägertext mit den unsichtbaren Zeichen)..."></textarea>
+    <textarea id="resultOutput" placeholder="Hier erscheint der Trägertext mit den unsichtbaren Bytes..."></textarea>
     <div style="margin-top:4px;">
-      <button class="retro-btn" onclick="copyResult()" id="btnCopy">Kopieren</button>
-      <button class="retro-btn" onclick="downloadResult()" id="btnSave">Als TXT speichern</button>
+      <button class="retro-btn" onclick="copyResult()" id="btnCopy">Text kopieren</button>
+      <button class="retro-btn" onclick="downloadResult()" id="btnSave">Carrier als TXT speichern</button>
+      <button class="retro-btn" onclick="downloadRecoveredBinary()" id="btnDownloadBin" style="display:none; background-color:#d4ffd4;">Extrahierte Datei herunterladen</button>
     </div>
   </fieldset>
 
@@ -155,7 +159,10 @@
 
 <script>
 let currentLang = 'de';
-const isLocalServer = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+let attachedBytes = null;
+let attachedName = "secret.txt";
+let recoveredBytes = null;
+let recoveredName = "recovered.bin";
 
 const langPacks = {
   de: {
@@ -169,21 +176,19 @@ const langPacks = {
     carrierHolder: "Dies ist ein völlig unschuldiger Trägertext...",
     pass: "Passwort (OPTIONAL):",
     passHolder: "(OPTIONAL)",
-    secretSec: "2. Geheimer Inhalt",
-    hintSecret: "Geheimen Text direkt hier eintippen oder Datei reinziehen:",
-    secretHolder: "Hier den geheimen Text eingeben...",
-    pickFile: "Datei anhängen",
-    hide: "[ TEXT VERSTECKEN ]",
-    extract: "[ TEXT EXTRAHIEREN ]",
+    secretSec: "2. Geheimer Inhalt (Text oder beliebige Datei: ZIP, JPG, PNG, EXE...)",
+    hintSecret: "Geheimen Text eintippen oder beliebige Datei per Drag & Drop reinziehen:",
+    secretHolder: "Geheimer Text oder Datei hier reinziehen...",
+    pickFile: "Datei auswählen (ZIP/Bild/etc.)",
+    hide: "[ VERSTECKEN ]",
+    extract: "[ EXTRAHIEREN ]",
     resultSec: "3. Ergebnis",
-    resultHolder: "Hier erscheint das Ergebnis (der präparierte Trägertext mit den unsichtbaren Zeichen)...",
-    copy: "Kopieren",
-    save: "Als TXT speichern",
-    ready: isLocalServer ? "Bereit. Lokales C/Python-Backend aktiv." : "Bereit. Browser-Engine (GitHub Pages) aktiv.",
-    copied: "Ergebnis kopiert!",
-    doneHide: "Erfolg! Unsichtbare Daten eingebettet.",
-    doneExt: "Extrahierung erfolgreich!",
-    errEmpty: "Bitte bei '2. Geheimer Inhalt' einen Text eingeben!"
+    resultHolder: "Hier erscheint der Trägertext mit den unsichtbaren Bytes...",
+    copy: "Text kopieren",
+    save: "Carrier als TXT speichern",
+    ready: "Bereit.",
+    copied: "Stego-Text in Zwischenablage kopiert!",
+    errEmpty: "Bitte bei '2. Geheimer Inhalt' einen Text eingeben oder eine Datei reinziehen!"
   },
   en: {
     title: "GhostByte Steganography Drive",
@@ -196,21 +201,19 @@ const langPacks = {
     carrierHolder: "This is ordinary, visible text...",
     pass: "Password (OPTIONAL):",
     passHolder: "(OPTIONAL)",
-    secretSec: "2. Secret Content",
-    hintSecret: "Type secret message here or drop a file:",
-    secretHolder: "Type your secret text here...",
-    pickFile: "Attach File",
+    secretSec: "2. Secret Content (Text or ANY file: ZIP, JPG, PNG, EXE...)",
+    hintSecret: "Type secret text or drag & drop any binary file:",
+    secretHolder: "Type secret message or drop any file here...",
+    pickFile: "Attach File (ZIP/Image/etc.)",
     hide: "[ HIDE DATA ]",
     extract: "[ EXTRACT DATA ]",
     resultSec: "3. Result",
-    resultHolder: "Output will appear here (carrier text holding invisible characters)...",
-    copy: "Copy",
-    save: "Save as TXT",
-    ready: isLocalServer ? "Ready. Local C/Python backend active." : "Ready. Standalone Browser Engine active.",
-    copied: "Result copied!",
-    doneHide: "Success! Invisible data embedded.",
-    doneExt: "Extraction successful!",
-    errEmpty: "Please enter text under '2. Secret Content'!"
+    resultHolder: "Carrier text with embedded invisible bytes will appear here...",
+    copy: "Copy Text",
+    save: "Save Carrier as TXT",
+    ready: "Ready.",
+    copied: "Stego text copied to clipboard!",
+    errEmpty: "Please enter text or attach a file under '2. Secret Content'!"
   }
 };
 
@@ -226,8 +229,19 @@ function resetForm() {
   document.getElementById('secretInput').value = "";
   document.getElementById('passphrase').value = "";
   document.getElementById('resultOutput').value = "";
-  document.getElementById('fileInfo').innerText = "";
+  clearAttachedFile();
+  document.getElementById('btnDownloadBin').style.display = "none";
+  recoveredBytes = null;
   setStatus(langPacks[currentLang].ready);
+}
+
+function clearAttachedFile() {
+  attachedBytes = null;
+  attachedName = "secret.txt";
+  document.getElementById('fileInfo').innerText = "";
+  document.getElementById('btnClearFile').style.display = "none";
+  document.getElementById('secretInput').disabled = false;
+  document.getElementById('secretInput').value = "";
 }
 
 function toggleLang() {
@@ -260,7 +274,12 @@ function setStatus(msg) {
   document.getElementById('status').innerText = msg;
 }
 
-// Drag & Drop & File Picker
+async function sha256Hex(uint8arr) {
+  const hashBuf = await crypto.subtle.digest('SHA-256', uint8arr);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Drag & Drop
 setupDrop(document.getElementById('carrierInput'), false);
 setupDrop(document.getElementById('secretInput'), true);
 
@@ -272,33 +291,122 @@ function setupDrop(elem, isSecret) {
     elem.style.backgroundColor = '#ffffff';
     if (e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      file.text().then(t => {
-        if (isSecret) document.getElementById('fileInfo').innerText = `[${file.name}]`;
-        elem.value = t;
-      });
+      if (isSecret) {
+        loadBinaryFile(file);
+      } else {
+        file.text().then(t => elem.value = t);
+      }
     }
   });
 }
 
 document.getElementById('filePicker').addEventListener('change', (e) => {
-  if (e.target.files.length > 0) {
-    const file = e.target.files[0];
-    file.text().then(t => {
-      document.getElementById('fileInfo').innerText = `[${file.name}]`;
-      document.getElementById('secretInput').value = t;
-    });
-  }
+  if (e.target.files.length > 0) loadBinaryFile(e.target.files[0]);
 });
 
-// --- CLIENT-SIDE ENGINE (Für GitHub Pages ohne Python-Server) ---
+async function loadBinaryFile(file) {
+  const buf = await file.arrayBuffer();
+  attachedBytes = new Uint8Array(buf);
+  attachedName = file.name;
+  const hash = await sha256Hex(attachedBytes);
+  document.getElementById('fileInfo').innerText = `${file.name} (${file.size} Bytes)`;
+  document.getElementById('btnClearFile').style.display = "inline-block";
+  document.getElementById('secretInput').value = `[BINÄRDATEI GELADEN: ${file.name} | ${file.size} Bytes]`;
+  document.getElementById('secretInput').disabled = true;
+  setStatus(`Datei geladen: ${file.name} | SHA-256: ${hash}`);
+}
+
+// --- GALOIS FIELD GF(2^8) FEC + ZERO-WIDTH ENGINE ---
+const GF_EXP = new Uint8Array(512);
+const GF_LOG = new Uint8Array(256);
+(() => {
+  let x = 1;
+  for (let i = 0; i < 255; i++) {
+    GF_EXP[i] = x;
+    GF_LOG[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
+})();
+
+function gfMul(a, b) {
+  if (a === 0 || b === 0) return 0;
+  return GF_EXP[GF_LOG[a] + GF_LOG[b]];
+}
+function gfInv(a) {
+  return GF_EXP[255 - GF_LOG[a]];
+}
+
+function encodeFEC(data) {
+  const blocks = Math.ceil(data.length / 4);
+  const out = new Uint8Array(blocks * 7);
+  let ptr = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const origLen = Math.min(4, data.length - i);
+    const b0 = data[i] || 0, b1 = data[i+1] || 0, b2 = data[i+2] || 0, b3 = data[i+3] || 0;
+    const p0 = b0 ^ b1 ^ b2 ^ b3;
+    const p1 = gfMul(1, b0) ^ gfMul(2, b1) ^ gfMul(4, b2) ^ gfMul(8, b3);
+    out[ptr++] = origLen;
+    out[ptr++] = b0; out[ptr++] = b1; out[ptr++] = b2; out[ptr++] = b3;
+    out[ptr++] = p0; out[ptr++] = p1;
+  }
+  return out;
+}
+
+function decodeFEC(stream) {
+  const out = [];
+  for (let i = 0; i < stream.length; i += 7) {
+    if (i + 7 > stream.length) {
+      for (let j = i + 1; j < stream.length; j++) out.push(stream[j]);
+      break;
+    }
+    let origLen = stream[i];
+    if (origLen === 0 || origLen > 4) origLen = 4;
+    const d = [stream[i+1], stream[i+2], stream[i+3], stream[i+4]];
+    const p0 = stream[i+5], p1 = stream[i+6];
+    const s0 = d[0] ^ d[1] ^ d[2] ^ d[3] ^ p0;
+    const s1 = gfMul(1, d[0]) ^ gfMul(2, d[1]) ^ gfMul(4, d[2]) ^ gfMul(8, d[3]) ^ p1;
+    const coeff = [1, 2, 4, 8];
+    if (s0 !== 0 || s1 !== 0) {
+      for (let pos = 0; pos < 4; pos++) {
+        if (gfMul(coeff[pos], s0) === s1) { d[pos] ^= s0; break; }
+      }
+    }
+    for (let k = 0; k < origLen; k++) out.push(d[k]);
+  }
+  return new Uint8Array(out);
+}
+
 const ZW_MAP = { '00': '\u200B', '01': '\u200C', '10': '\u200D', '11': '\uFEFF' };
 const REV_ZW = { '\u200B': '00', '\u200C': '01', '\u200D': '10', '\uFEFF': '11' };
 const MAGIC_START = "\u200B\u200D\u200B\u200D";
 
+function packHeader(filename, bytes) {
+  const nameBytes = new TextEncoder().encode(filename).slice(0, 255);
+  const out = new Uint8Array(9 + nameBytes.length + bytes.length);
+  out.set([0x47, 0x48, 0x53, 0x54], 0); // "GHST"
+  out[4] = nameBytes.length;
+  new DataView(out.buffer).setUint32(5, bytes.length, false);
+  out.set(nameBytes, 9);
+  out.set(bytes, 9 + nameBytes.length);
+  return out;
+}
+
+function unpackHeader(blob) {
+  if (blob.length < 9 || blob[0] !== 0x47 || blob[1] !== 0x48 || blob[2] !== 0x53 || blob[3] !== 0x54) {
+    return { name: "recovered.bin", data: blob };
+  }
+  const nameLen = blob[4];
+  const dataLen = new DataView(blob.buffer, blob.byteOffset, blob.byteLength).getUint32(5, false);
+  const name = new TextDecoder().decode(blob.slice(9, 9 + nameLen)) || "recovered.bin";
+  const data = blob.slice(9 + nameLen, 9 + nameLen + dataLen);
+  return { name, data };
+}
+
 async function browserCrypto(bytes, password, encrypt) {
   if (!password) return bytes;
-  const enc = new TextEncoder();
-  const keyHash = await crypto.subtle.digest('SHA-256', enc.encode(password));
+  const keyHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
   const key = await crypto.subtle.importKey('raw', keyHash, { name: 'AES-CTR' }, false, ['encrypt', 'decrypt']);
 
   if (encrypt) {
@@ -316,11 +424,11 @@ async function browserCrypto(bytes, password, encrypt) {
   }
 }
 
-function browserEncodeZW(bytes) {
-  const payload = new Uint8Array(4 + bytes.length);
-  const view = new DataView(payload.buffer);
-  view.setUint32(0, bytes.length, false); // Big-Endian
-  payload.set(bytes, 4);
+function encodeZW(bytes) {
+  const fec = encodeFEC(bytes);
+  const payload = new Uint8Array(4 + fec.length);
+  new DataView(payload.buffer).setUint32(0, fec.length, false);
+  payload.set(fec, 4);
 
   let out = MAGIC_START;
   for (let b of payload) {
@@ -330,70 +438,59 @@ function browserEncodeZW(bytes) {
   return out;
 }
 
-function browserDecodeZW(text) {
+function decodeZW(text) {
   const start = text.indexOf(MAGIC_START);
-  if (start === -1) throw new Error("Keine GhostByte-Nutzdaten gefunden!");
-  const raw = text.slice(start + MAGIC_START.length);
+  const raw = start !== -1 ? text.slice(start + MAGIC_START.length) : text;
 
   let bitStr = "";
   for (let ch of raw) {
     if (REV_ZW[ch]) bitStr += REV_ZW[ch];
   }
-  if (bitStr.length < 32) throw new Error("GhostByte-Header unvollständig!");
+  if (bitStr.length < 8) throw new Error("Keine GhostByte-Daten gefunden!");
 
-  const headerBytes = new Uint8Array(4);
-  for (let i = 0; i < 4; i++) headerBytes[i] = parseInt(bitStr.slice(i * 8, (i + 1) * 8), 2);
-  const expectedLen = new DataView(headerBytes.buffer).getUint32(0, false);
-  const totalBits = 32 + expectedLen * 8;
-
-  if (bitStr.length < totalBits) throw new Error("Datenstrom abgeschnitten!");
-
-  const result = new Uint8Array(expectedLen);
-  for (let i = 0; i < expectedLen; i++) {
-    result[i] = parseInt(bitStr.slice(32 + i * 8, 32 + (i + 1) * 8), 2);
+  const usableBits = Math.floor(bitStr.length / 8) * 8;
+  const allBytes = new Uint8Array(usableBits / 8);
+  for (let i = 0; i < allBytes.length; i++) {
+    allBytes[i] = parseInt(bitStr.slice(i * 8, (i + 1) * 8), 2);
   }
-  return result;
+
+  let fecStream = allBytes;
+  let truncated = true;
+  if (start !== -1 && allBytes.length >= 4) {
+    const expectedLen = new DataView(allBytes.buffer).getUint32(0, false);
+    fecStream = allBytes.slice(4, 4 + expectedLen);
+    truncated = fecStream.length < expectedLen;
+  }
+  return { bytes: decodeFEC(fecStream), truncated };
 }
 
-// --- HAUPT-AKTIONEN ---
 async function doHide() {
   const carrier = document.getElementById('carrierInput').value.trim() || "Normaler Trägertext.";
-  const secret = document.getElementById('secretInput').value;
   const pass = document.getElementById('passphrase').value;
 
-  if (!secret.trim()) {
-    alert(langPacks[currentLang].errEmpty);
-    return;
+  let rawBytes, fname;
+  if (attachedBytes) {
+    rawBytes = attachedBytes;
+    fname = attachedName;
+  } else {
+    const txt = document.getElementById('secretInput').value;
+    if (!txt.trim()) {
+      alert(langPacks[currentLang].errEmpty);
+      return;
+    }
+    rawBytes = new TextEncoder().encode(txt);
+    fname = "message.txt";
   }
 
-  setStatus("Verarbeite...");
-
-  // 1. Versuch: Lokales Python-Backend
-  if (isLocalServer) {
-    try {
-      const res = await fetch('/api/hide', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ carrier, secret, password: pass })
-      });
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById('resultOutput').value = data.stego_text;
-        setStatus(`${langPacks[currentLang].doneHide} (${data.bytes_hidden} Bytes verborgen).`);
-        return;
-      }
-    } catch (e) { /* Fallback auf Browser-Engine */ }
-  }
-
-  // 2. Browser-Engine (GitHub Pages)
   try {
-    const rawBytes = new TextEncoder().encode(secret);
-    const encBytes = await browserCrypto(rawBytes, pass, true);
-    const zwText = browserEncodeZW(encBytes);
+    const origHash = await sha256Hex(rawBytes);
+    const packed = packHeader(fname, rawBytes);
+    const encBytes = await browserCrypto(packed, pass, true);
+    const zwText = encodeZW(encBytes);
     const stegoText = carrier + "\n\n" + zwText;
 
     document.getElementById('resultOutput').value = stegoText;
-    setStatus(`${langPacks[currentLang].doneHide} (${rawBytes.length} Bytes verborgen).`);
+    setStatus(`Versteckt: ${fname} (${rawBytes.length} Bytes) | Original SHA-256: ${origHash}`);
   } catch (err) {
     setStatus("Fehler: " + err.message);
   }
@@ -408,35 +505,26 @@ async function doExtract() {
     return;
   }
 
-  setStatus("Extrahiere...");
-
-  // 1. Versuch: Lokales Python-Backend
-  if (isLocalServer) {
-    try {
-      const res = await fetch('/api/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stego_text: text, password: pass })
-      });
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById('secretInput').value = data.secret;
-        document.getElementById('resultOutput').value = data.secret;
-        setStatus(langPacks[currentLang].doneExt);
-        return;
-      }
-    } catch (e) { /* Fallback */ }
-  }
-
-  // 2. Browser-Engine (GitHub Pages)
   try {
-    const rawBytes = browserDecodeZW(text);
-    const decBytes = await browserCrypto(rawBytes, pass, false);
-    const secretStr = new TextDecoder().decode(decBytes);
+    const { bytes: rawDec, truncated } = decodeZW(text);
+    const decBytes = await browserCrypto(rawDec, pass, false);
+    const { name, data } = unpackHeader(decBytes);
+    const recHash = await sha256Hex(data);
 
-    document.getElementById('secretInput').value = secretStr;
-    document.getElementById('resultOutput').value = secretStr;
-    setStatus(langPacks[currentLang].doneExt);
+    recoveredBytes = data;
+    recoveredName = name;
+
+    const dlBtn = document.getElementById('btnDownloadBin');
+    dlBtn.style.display = "inline-block";
+    dlBtn.innerText = `Download: ${name} (${data.length} Bytes)`;
+
+    // Falls Textdatei, auch direkt anzeigen
+    if (name.endsWith(".txt")) {
+      document.getElementById('resultOutput').value = new TextDecoder().decode(data);
+    }
+
+    const warn = truncated ? " [PARTIAL RECOVERY: Text war abgeschnitten!]" : "";
+    setStatus(`Extrahiert: ${name} (${data.length} Bytes) | SHA-256: ${recHash}${warn}`);
   } catch (err) {
     setStatus("Fehler: " + err.message);
   }
@@ -451,7 +539,16 @@ function downloadResult() {
   const blob = new Blob([document.getElementById('resultOutput').value], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = "ghostbyte_stego.txt";
+  a.download = "ghostbyte_carrier.txt";
+  a.click();
+}
+
+function downloadRecoveredBinary() {
+  if (!recoveredBytes) return;
+  const blob = new Blob([recoveredBytes], { type: 'application/octet-stream' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = recoveredName;
   a.click();
 }
 </script>

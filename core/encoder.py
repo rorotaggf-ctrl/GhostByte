@@ -10,6 +10,11 @@ ZW_MAP = {
 
 MAGIC_START = "\u200B\u200D\u200B\u200D"
 
+def pack_file(filename: str, data: bytes) -> bytes:
+    name_bytes = filename.encode("utf-8")[:255]
+    header = b"GHST" + struct.pack(">BI", len(name_bytes), len(data)) + name_bytes
+    return header + data
+
 def encode_bytes_to_zw(data: bytes) -> str:
     fec_data = encode_fec(data)
     header = struct.pack(">I", len(fec_data))
