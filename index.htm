@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>GhostByte Steganography</title>
+  <style>
+    body {
+      background-color: #008080;
+      color: #000000;
+      font-family: "MS Sans Serif", Geneva, Tahoma, sans-serif;
+      margin: 20px;
+    }
+    .win-frame {
+      background-color: #c0c0c0;
+      border: 3px outset #ffffff;
+      padding: 12px;
+      max-width: 820px;
+      margin: 0 auto;
+      box-shadow: 4px 4px 0px #000000;
+      box-sizing: border-box;
+    }
+    .win-bar {
+      background: linear-gradient(90deg, #000080, #1084d0);
+      color: #ffffff;
+      padding: 4px 8px;
+      font-weight: bold;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .retro-btn {
+      background-color: #c0c0c0;
+      border: 2px outset #ffffff;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 3px 10px;
+      color: #000000;
+      font-weight: bold;
+      font-family: inherit;
+    }
+    .retro-btn:active {
+      border: 2px inset #ffffff;
+    }
+    .settings-panel {
+      display: none;
+      background-color: #dcdcdc;
+      border: 2px groove #ffffff;
+      padding: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    fieldset {
+      border: 2px groove #ffffff;
+      margin-bottom: 12px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    legend {
+      font-weight: bold;
+      font-size: 12px;
+    }
+    textarea {
+      width: 100%;
+      height: 95px;
+      border: 2px inset #ffffff;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      display: block;
+      margin-top: 4px;
+      margin-bottom: 6px;
+      resize: vertical;
+    }
+    .action-btn {
+      background-color: #c0c0c0;
+      border: 2px outset #ffffff;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 2px 4px;
+      font-family: inherit;
+    }
+    .action-btn:active {
+      border: 2px inset #ffffff;
+    }
+    .drop-hint {
+      font-size: 11px;
+      color: #333333;
+    }
+    .status-bar {
+      border: 2px inset #ffffff;
+      background: #c0c0c0;
+      padding: 4px 8px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+    input[type="password"] {
+      border: 2px inset #ffffff;
+      padding: 3px 5px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+
+<div class="win-frame">
+  <div class="win-bar">
+    <span id="txtTitle">GhostByte Steganography Drive</span>
+    <button class="retro-btn" onclick="toggleSettings()" id="btnSettingsToggle">[ OPTIONEN ]</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <b id="txtSettings">Einstellungen:</b>
+    <button class="retro-btn" onclick="resetForm()" id="btnReset">Alles zurücksetzen</button>
+    <button class="retro-btn" onclick="toggleLang()" id="btnLang">Sprache: Deutsch</button>
+  </div>
+
+  <fieldset>
+    <legend id="lblCarrierSec">1. Sichtbarer Trägertext</legend>
+    <div class="drop-hint" id="hintCarrier">Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:</div>
+    <textarea id="carrierInput" placeholder="Dies ist ein völlig unschuldiger Trägertext..."></textarea>
+    <span id="lblPass">Passwort (OPTIONAL):</span> 
+    <input type="password" id="passphrase" placeholder="(OPTIONAL)">
+  </fieldset>
+
+  <fieldset>
+    <legend id="lblSecretSec">2. Geheimer Inhalt</legend>
+    <div class="drop-hint" id="hintSecret">Geheimen Text direkt hier eintippen oder Datei reinziehen:</div>
+    <textarea id="secretInput" placeholder="Hier den geheimen Text eingeben..."></textarea>
+    <input type="file" id="filePicker" style="display:none;">
+    <button class="retro-btn" onclick="document.getElementById('filePicker').click()" id="btnPickFile">Datei anhängen</button>
+    <span id="fileInfo" style="font-size:11px; margin-left: 6px;"></span>
+  </fieldset>
+
+  <div style="text-align: center; margin: 10px 0;">
+    <button class="action-btn" onclick="doHide()" id="btnHide">[ TEXT VERSTECKEN ]</button>
+    <button class="action-btn" onclick="doExtract()" id="btnExtract">[ TEXT EXTRAHIEREN ]</button>
+  </div>
+
+  <fieldset>
+    <legend id="lblResultSec">3. Ergebnis</legend>
+    <textarea id="resultOutput" placeholder="Hier erscheint das Ergebnis (der präparierte Trägertext mit den unsichtbaren Zeichen)..."></textarea>
+    <div style="margin-top:4px;">
+      <button class="retro-btn" onclick="copyResult()" id="btnCopy">Kopieren</button>
+      <button class="retro-btn" onclick="downloadResult()" id="btnSave">Als TXT speichern</button>
+    </div>
+  </fieldset>
+
+  <div class="status-bar" id="status">Bereit.</div>
+</div>
+
+<script>
+let currentLang = 'de';
+const isLocalServer = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const langPacks = {
+  de: {
+    title: "GhostByte Steganography Drive",
+    settingsToggle: "[ OPTIONEN ]",
+    settings: "Einstellungen:",
+    reset: "Alles zurücksetzen",
+    langBtn: "Sprache: Deutsch",
+    carrierSec: "1. Sichtbarer Trägertext",
+    hintCarrier: "Normalen Text eintippen, einfügen oder TXT-Datei reinziehen:",
+    carrierHolder: "Dies ist ein völlig unschuldiger Trägertext...",
+    pass: "Passwort (OPTIONAL):",
+    passHolder: "(OPTIONAL)",
+    secretSec: "2. Geheimer Inhalt",
+    hintSecret: "Geheimen Text direkt hier eintippen oder Datei reinziehen:",
+    secretHolder: "Hier den geheimen Text eingeben...",
+    pickFile: "Datei anhängen",
+    hide: "[ TEXT VERSTECKEN ]",
+    extract: "[ TEXT EXTRAHIEREN ]",
+    resultSec: "3. Ergebnis",
+    resultHolder: "Hier erscheint das Ergebnis (der präparierte Trägertext mit den unsichtbaren Zeichen)...",
+    copy: "Kopieren",
+    save: "Als TXT speichern",
+    ready: isLocalServer ? "Bereit. Lokales C/Python-Backend aktiv." : "Bereit. Browser-Engine (GitHub Pages) aktiv.",
+    copied: "Ergebnis kopiert!",
+    doneHide: "Erfolg! Unsichtbare Daten eingebettet.",
+    doneExt: "Extrahierung erfolgreich!",
+    errEmpty: "Bitte bei '2. Geheimer Inhalt' einen Text eingeben!"
+  },
+  en: {
+    title: "GhostByte Steganography Drive",
+    settingsToggle: "[ OPTIONS ]",
+    settings: "Settings:",
+    reset: "Reset Form",
+    langBtn: "Language: English",
+    carrierSec: "1. Visible Carrier Text",
+    hintCarrier: "Type text, paste, or drop a TXT file:",
+    carrierHolder: "This is ordinary, visible text...",
+    pass: "Password (OPTIONAL):",
+    passHolder: "(OPTIONAL)",
+    secretSec: "2. Secret Content",
+    hintSecret: "Type secret message here or drop a file:",
+    secretHolder: "Type your secret text here...",
+    pickFile: "Attach File",
+    hide: "[ HIDE DATA ]",
+    extract: "[ EXTRACT DATA ]",
+    resultSec: "3. Result",
+    resultHolder: "Output will appear here (carrier text holding invisible characters)...",
+    copy: "Copy",
+    save: "Save as TXT",
+    ready: isLocalServer ? "Ready. Local C/Python backend active." : "Ready. Standalone Browser Engine active.",
+    copied: "Result copied!",
+    doneHide: "Success! Invisible data embedded.",
+    doneExt: "Extraction successful!",
+    errEmpty: "Please enter text under '2. Secret Content'!"
+  }
+};
+
+window.onload = () => setStatus(langPacks[currentLang].ready);
+
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+}
+
+function resetForm() {
+  document.getElementById('carrierInput').value = "";
+  document.getElementById('secretInput').value = "";
+  document.getElementById('passphrase').value = "";
+  document.getElementById('resultOutput').value = "";
+  document.getElementById('fileInfo').innerText = "";
+  setStatus(langPacks[currentLang].ready);
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'de' ? 'en' : 'de';
+  const pack = langPacks[currentLang];
+  document.getElementById('txtTitle').innerText = pack.title;
+  document.getElementById('btnSettingsToggle').innerText = pack.settingsToggle;
+  document.getElementById('txtSettings').innerText = pack.settings;
+  document.getElementById('btnReset').innerText = pack.reset;
+  document.getElementById('btnLang').innerText = pack.langBtn;
+  document.getElementById('lblCarrierSec').innerText = pack.carrierSec;
+  document.getElementById('hintCarrier').innerText = pack.hintCarrier;
+  document.getElementById('carrierInput').placeholder = pack.carrierHolder;
+  document.getElementById('lblPass').innerText = pack.pass;
+  document.getElementById('passphrase').placeholder = pack.passHolder;
+  document.getElementById('lblSecretSec').innerText = pack.secretSec;
+  document.getElementById('hintSecret').innerText = pack.hintSecret;
+  document.getElementById('secretInput').placeholder = pack.secretHolder;
+  document.getElementById('btnPickFile').innerText = pack.pickFile;
+  document.getElementById('btnHide').innerText = pack.hide;
+  document.getElementById('btnExtract').innerText = pack.extract;
+  document.getElementById('lblResultSec').innerText = pack.resultSec;
+  document.getElementById('resultOutput').placeholder = pack.resultHolder;
+  document.getElementById('btnCopy').innerText = pack.copy;
+  document.getElementById('btnSave').innerText = pack.save;
+  setStatus(pack.ready);
+}
+
+function setStatus(msg) {
+  document.getElementById('status').innerText = msg;
+}
+
+// Drag & Drop & File Picker
+setupDrop(document.getElementById('carrierInput'), false);
+setupDrop(document.getElementById('secretInput'), true);
+
+function setupDrop(elem, isSecret) {
+  elem.addEventListener('dragover', (e) => { e.preventDefault(); elem.style.backgroundColor = '#ffffcc'; });
+  elem.addEventListener('dragleave', () => { elem.style.backgroundColor = '#ffffff'; });
+  elem.addEventListener('drop', (e) => {
+    e.preventDefault();
+    elem.style.backgroundColor = '#ffffff';
+    if (e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      file.text().then(t => {
+        if (isSecret) document.getElementById('fileInfo').innerText = `[${file.name}]`;
+        elem.value = t;
+      });
+    }
+  });
+}
+
+document.getElementById('filePicker').addEventListener('change', (e) => {
+  if (e.target.files.length > 0) {
+    const file = e.target.files[0];
+    file.text().then(t => {
+      document.getElementById('fileInfo').innerText = `[${file.name}]`;
+      document.getElementById('secretInput').value = t;
+    });
+  }
+});
+
+// --- CLIENT-SIDE ENGINE (Für GitHub Pages ohne Python-Server) ---
+const ZW_MAP = { '00': '\u200B', '01': '\u200C', '10': '\u200D', '11': '\uFEFF' };
+const REV_ZW = { '\u200B': '00', '\u200C': '01', '\u200D': '10', '\uFEFF': '11' };
+const MAGIC_START = "\u200B\u200D\u200B\u200D";
+
+async function browserCrypto(bytes, password, encrypt) {
+  if (!password) return bytes;
+  const enc = new TextEncoder();
+  const keyHash = await crypto.subtle.digest('SHA-256', enc.encode(password));
+  const key = await crypto.subtle.importKey('raw', keyHash, { name: 'AES-CTR' }, false, ['encrypt', 'decrypt']);
+
+  if (encrypt) {
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+    const cipherBuf = await crypto.subtle.encrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, bytes);
+    const out = new Uint8Array(16 + cipherBuf.byteLength);
+    out.set(iv, 0);
+    out.set(new Uint8Array(cipherBuf), 16);
+    return out;
+  } else {
+    const iv = bytes.slice(0, 16);
+    const cipher = bytes.slice(16);
+    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-CTR', counter: iv, length: 64 }, key, cipher);
+    return new Uint8Array(plainBuf);
+  }
+}
+
+function browserEncodeZW(bytes) {
+  const payload = new Uint8Array(4 + bytes.length);
+  const view = new DataView(payload.buffer);
+  view.setUint32(0, bytes.length, false); // Big-Endian
+  payload.set(bytes, 4);
+
+  let out = MAGIC_START;
+  for (let b of payload) {
+    const bits = b.toString(2).padStart(8, '0');
+    out += ZW_MAP[bits.slice(0, 2)] + ZW_MAP[bits.slice(2, 4)] + ZW_MAP[bits.slice(4, 6)] + ZW_MAP[bits.slice(6, 8)];
+  }
+  return out;
+}
+
+function browserDecodeZW(text) {
+  const start = text.indexOf(MAGIC_START);
+  if (start === -1) throw new Error("Keine GhostByte-Nutzdaten gefunden!");
+  const raw = text.slice(start + MAGIC_START.length);
+
+  let bitStr = "";
+  for (let ch of raw) {
+    if (REV_ZW[ch]) bitStr += REV_ZW[ch];
+  }
+  if (bitStr.length < 32) throw new Error("GhostByte-Header unvollständig!");
+
+  const headerBytes = new Uint8Array(4);
+  for (let i = 0; i < 4; i++) headerBytes[i] = parseInt(bitStr.slice(i * 8, (i + 1) * 8), 2);
+  const expectedLen = new DataView(headerBytes.buffer).getUint32(0, false);
+  const totalBits = 32 + expectedLen * 8;
+
+  if (bitStr.length < totalBits) throw new Error("Datenstrom abgeschnitten!");
+
+  const result = new Uint8Array(expectedLen);
+  for (let i = 0; i < expectedLen; i++) {
+    result[i] = parseInt(bitStr.slice(32 + i * 8, 32 + (i + 1) * 8), 2);
+  }
+  return result;
+}
+
+// --- HAUPT-AKTIONEN ---
+async function doHide() {
+  const carrier = document.getElementById('carrierInput').value.trim() || "Normaler Trägertext.";
+  const secret = document.getElementById('secretInput').value;
+  const pass = document.getElementById('passphrase').value;
+
+  if (!secret.trim()) {
+    alert(langPacks[currentLang].errEmpty);
+    return;
+  }
+
+  setStatus("Verarbeite...");
+
+  // 1. Versuch: Lokales Python-Backend
+  if (isLocalServer) {
+    try {
+      const res = await fetch('/api/hide', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ carrier, secret, password: pass })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('resultOutput').value = data.stego_text;
+        setStatus(`${langPacks[currentLang].doneHide} (${data.bytes_hidden} Bytes verborgen).`);
+        return;
+      }
+    } catch (e) { /* Fallback auf Browser-Engine */ }
+  }
+
+  // 2. Browser-Engine (GitHub Pages)
+  try {
+    const rawBytes = new TextEncoder().encode(secret);
+    const encBytes = await browserCrypto(rawBytes, pass, true);
+    const zwText = browserEncodeZW(encBytes);
+    const stegoText = carrier + "\n\n" + zwText;
+
+    document.getElementById('resultOutput').value = stegoText;
+    setStatus(`${langPacks[currentLang].doneHide} (${rawBytes.length} Bytes verborgen).`);
+  } catch (err) {
+    setStatus("Fehler: " + err.message);
+  }
+}
+
+async function doExtract() {
+  const text = document.getElementById('resultOutput').value || document.getElementById('carrierInput').value;
+  const pass = document.getElementById('passphrase').value;
+
+  if (!text.trim()) {
+    alert("Kein Text vorhanden!");
+    return;
+  }
+
+  setStatus("Extrahiere...");
+
+  // 1. Versuch: Lokales Python-Backend
+  if (isLocalServer) {
+    try {
+      const res = await fetch('/api/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stego_text: text, password: pass })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('secretInput').value = data.secret;
+        document.getElementById('resultOutput').value = data.secret;
+        setStatus(langPacks[currentLang].doneExt);
+        return;
+      }
+    } catch (e) { /* Fallback */ }
+  }
+
+  // 2. Browser-Engine (GitHub Pages)
+  try {
+    const rawBytes = browserDecodeZW(text);
+    const decBytes = await browserCrypto(rawBytes, pass, false);
+    const secretStr = new TextDecoder().decode(decBytes);
+
+    document.getElementById('secretInput').value = secretStr;
+    document.getElementById('resultOutput').value = secretStr;
+    setStatus(langPacks[currentLang].doneExt);
+  } catch (err) {
+    setStatus("Fehler: " + err.message);
+  }
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(document.getElementById('resultOutput').value);
+  setStatus(langPacks[currentLang].copied);
+}
+
+function downloadResult() {
+  const blob = new Blob([document.getElementById('resultOutput').value], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "ghostbyte_stego.txt";
+  a.click();
+}
+</script>
+</body>
+</html>
