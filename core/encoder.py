@@ -1,4 +1,5 @@
 import struct
+from core.fec import encode_fec
 
 ZW_MAP = {
     '00': '\u200B',
@@ -10,10 +11,10 @@ ZW_MAP = {
 MAGIC_START = "\u200B\u200D\u200B\u200D"
 
 def encode_bytes_to_zw(data: bytes) -> str:
-    # 4 Bytes Laenge voranstellen
-    header = struct.pack(">I", len(data))
-    payload = header + data
-    
+    fec_data = encode_fec(data)
+    header = struct.pack(">I", len(fec_data))
+    payload = header + fec_data
+
     zw_chunks = []
     for byte in payload:
         bits = f"{byte:08b}"

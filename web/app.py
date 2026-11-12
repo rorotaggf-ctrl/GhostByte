@@ -70,11 +70,16 @@ class GhostByteHandler(SimpleHTTPRequestHandler):
                 stego_text = data.get("stego_text", "")
                 passphrase = data.get("password", "")
 
-                raw_bytes = decode_zw_to_bytes(stego_text)
+                raw_bytes, stats = decode_zw_to_bytes(stego_text)
                 decrypted = decrypt_payload(raw_bytes, passphrase)
                 extracted_str = decrypted.decode("utf-8", errors="replace")
 
-                resp = {"success": True, "secret": extracted_str}
+                resp = {
+                    "success": True,
+                    "secret": extracted_str,
+                    "truncated": stats["truncated"],
+                    "repaired_bytes": stats["repaired_bytes"]
+                }
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
